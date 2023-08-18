@@ -3,7 +3,7 @@
 ## Goal
 
 Implement as much functionality of a redis server as possible in 1024 lines of 
-C# code (according to `cloc`).
+C# code (according to `cloc`). Test code (in a separate module) does not count.
 
 ## Approach
 
