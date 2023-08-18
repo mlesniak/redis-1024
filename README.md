@@ -10,6 +10,18 @@ C# code (according to `cloc`).
 - Listen to connection
 - Implement commands until we run out of lines
 
+Received
+
+```
+*2          an array with two elements
+$7          string of 7 bytes follows
+COMMAND
+$4          string 4 bytes follows
+DOCS
+```
+
+Client sent `COMMAND DOCS` and expects something in return?
+
 ## References
 
  - https://redis.io/docs/reference/protocol-spec/
