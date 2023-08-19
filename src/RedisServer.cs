@@ -1,4 +1,5 @@
 using System.ComponentModel.Design;
+using System.Net;
 using System.Net.Sockets;
 
 namespace Lesniak.Redis;
@@ -9,7 +10,7 @@ public class RedisServer
 
     public RedisServer(int port = 6379)
     {
-        _server = new(port);
+        _server = new(IPAddress.Loopback, port);
     }
 
     public void Start()
@@ -44,7 +45,6 @@ public class RedisServer
     }
 
     // Command is always an array 
-    // TODO(mlesniak) Parse into array of RedisString -- no overengineering, we have no idea yet.
     private static void ReadNextCommand(NetworkStream stream)
     {
         byte[] buffer = new byte[1024];
