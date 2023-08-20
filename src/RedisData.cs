@@ -24,30 +24,29 @@ public class RedisData
     static (RedisData, int) Parse(byte[] data, int offset)
     {
         RedisData result = new();
-        int nextOffset = 0;
+        int nextOffset;
         
         if (data[offset] == '*')
         {
             result.Type = DataType.Array;
             result.ArrayValues = new();
-            var numEndIndex = Array.IndexOf(data, (byte)'\r', offset);
-            // TODO(mlesniak) expectation, count vs endIndex
-            var num = Int32.Parse(Encoding.ASCII.GetString(data, offset + 1, numEndIndex - offset - 1));
-            offset = numEndIndex + 2;
-            for (var i = 0; i < num; i++)
+            var numElementsIndexEnd = Array.IndexOf(data, (byte)'\r', offset);
+            var numElements = Int32.Parse(Encoding.ASCII.GetString(data, offset + 1, numElementsIndexEnd - offset - 1));
+            offset = numElementsIndexEnd + 2;
+            for (var i = 0; i < numElements; i++)
             {
-                var (elem, end2) = Parse(data, offset);
+                (RedisData elem, int nextArrayOffset) = Parse(data, offset);
                 result.ArrayValues.Add(elem);
-                offset = end2;
+                offset = nextArrayOffset;
             }
             nextOffset = offset;
         }
         else if (data[offset] == '$')
         {
             result.Type = DataType.BulkString;
-            var lengthEnd = Array.IndexOf(data, (byte)'\r');
-            var length = Int32.Parse(Encoding.ASCII.GetString(data, offset + 1, lengthEnd - 1));
-            int stringStart = offset + lengthEnd + 2;
+            var lengthEnd = Array.IndexOf(data, (byte)'\r', offset);
+            var length = Int32.Parse(Encoding.ASCII.GetString(data, offset + 1, lengthEnd - offset - 1));
+            int stringStart = lengthEnd + 2;
             result.BulkString = Encoding.ASCII.GetString(data, stringStart, length);
             nextOffset = stringStart + length + 2;
         }
