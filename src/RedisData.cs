@@ -24,7 +24,7 @@ public class RedisData
     static (RedisData, int) Parse(byte[] data, int offset)
     {
         RedisData result = new();
-        int end = 0;
+        int nextOffset = 0;
         
         if (data[offset] == '*')
         {
@@ -40,23 +40,23 @@ public class RedisData
                 result.ArrayValues.Add(elem);
                 offset = end2;
             }
-            end = offset;
+            nextOffset = offset;
         }
         else if (data[offset] == '$')
         {
             result.Type = DataType.BulkString;
-            var lenEnd = Array.IndexOf(data, (byte)'\r');
-            var len = Int32.Parse(Encoding.ASCII.GetString(data, offset + 1, lenEnd - 1));
-            int start = offset + lenEnd + 2;
-            result.BulkString = Encoding.ASCII.GetString(data, start, len);
-            end = start + len + 2;
+            var lengthEnd = Array.IndexOf(data, (byte)'\r');
+            var length = Int32.Parse(Encoding.ASCII.GetString(data, offset + 1, lengthEnd - 1));
+            int stringStart = offset + lengthEnd + 2;
+            result.BulkString = Encoding.ASCII.GetString(data, stringStart, length);
+            nextOffset = stringStart + length + 2;
         }
         else
         {
-            throw new ArgumentException($"Invalid byte {data[offset]}");
+            throw new ArgumentException($"Invalid byte {data[offset]} to parse");
         }
 
-        return (result, end);
+        return (result, nextOffset);
     }
 
     public override string ToString()

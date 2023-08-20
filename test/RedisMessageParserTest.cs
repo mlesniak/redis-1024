@@ -16,7 +16,7 @@ public class RedisMessageParserTest
     }
     
     [Fact]
-    public void TestBulkStringParsing()
+    public void ToRedisMessage_SimpleBulkString_ReturnsCorrectResult()
     {
         var message = """
                       $5
