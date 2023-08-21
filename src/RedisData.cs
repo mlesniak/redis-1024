@@ -1,31 +1,18 @@
+using System.Reflection;
 using System.Text;
 
 namespace Lesniak.Redis;
 
-public static class DataTypeIdentifier
-{
-    public static char Identifier(this RedisData.DataType type)
-    {
-        return type switch
-        {
-            RedisData.DataType.Array => '*',
-            RedisData.DataType.BulkString => '$',
-            _ => throw new ArgumentOutOfRangeException(nameof(type), type, null)
-        };
-    }
-}
 
 public class RedisData
 {
-    public enum DataType
-    {
-        Array,
-        BulkString,
-    }
+    public RedisDataType Type { get; private set; }
+    public string? BulkString { get; private set; }
+    public List<RedisData>? ArrayValues { get; private set; }
 
-    public DataType Type { get; set; }
-    public string? BulkString { get; set; }
-    public List<RedisData>? ArrayValues { get; set; }
+    private delegate (RedisData, int) Parser(byte[] data, int offset);
+
+    private static Dictionary<char, Parser> parsers = new();
 
     public static RedisData Parse(byte[] data)
     {
@@ -33,7 +20,6 @@ public class RedisData
         return result;
     }
 
-    // return (parsed data, beginning of next element)
     static (RedisData, int) Parse(byte[] data, int offset)
     {
         RedisData result = new();
@@ -41,16 +27,16 @@ public class RedisData
 
         switch (data[offset])
         {
-            case (byte)'$':
-                result.Type = DataType.BulkString;
+            case var b when b == RedisDataType.BulkString.Identifier():
+                result.Type = RedisDataType.BulkString;
                 var lengthEnd = Array.IndexOf(data, (byte)'\r', offset);
                 var length = Int32.Parse(Encoding.ASCII.GetString(data, offset + 1, lengthEnd - offset - 1));
                 int stringStart = lengthEnd + 2;
                 result.BulkString = Encoding.ASCII.GetString(data, stringStart, length);
                 nextOffset = stringStart + length + 2;
                 break;
-            case (byte)'*':
-                result.Type = DataType.Array;
+            case var b when b == RedisDataType.Array.Identifier():
+                result.Type = RedisDataType.Array;
                 result.ArrayValues = new();
                 var numElementsIndexEnd = Array.IndexOf(data, (byte)'\r', offset);
                 var numElements =
