@@ -49,6 +49,9 @@ public class RedisServer
     {
         byte[] buffer = new byte[1024];
         int read = stream.Read(buffer);
+        
+        // TODO(mlesniak) Parse buffer into RedisData and pass it to an interpreter function.
+        
         Console.WriteLine("read = {0}", read);
         foreach (byte b in buffer.Take(read))
         {
