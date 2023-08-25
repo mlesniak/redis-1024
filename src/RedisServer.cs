@@ -47,18 +47,10 @@ public class RedisServer
     // Command is always an array 
     private static void ReadNextCommand(NetworkStream stream)
     {
-        byte[] buffer = new byte[1024];
-        int read = stream.Read(buffer);
-        
-        // TODO(mlesniak) Parse buffer into RedisData and pass it to an interpreter function.
-        
-        Console.WriteLine("read = {0}", read);
-        foreach (byte b in buffer.Take(read))
-        {
-            Console.Write((char)b);
-        }
-
-        Console.WriteLine();
+        byte[] buffer = new byte[16384];
+        stream.Read(buffer);
+        var command = RedisDataParser.Parse(buffer);
+        Console.WriteLine($"Command:\r\n{command}");
     }
 }
 
