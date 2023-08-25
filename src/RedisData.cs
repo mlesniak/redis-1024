@@ -40,5 +40,6 @@ public class RedisData
 
     public static RedisData of(string s) => new() { Type = RedisDataType.BulkString, BulkString = s };
 
-    public static RedisData of(params RedisData[] arrayElements) => new() { Type = RedisDataType.Array, ArrayValues = arrayElements.ToList() };
+    public static RedisData of(params RedisData[] arrayElements) =>
+        new() { Type = RedisDataType.Array, ArrayValues = arrayElements.ToList() };
 }
