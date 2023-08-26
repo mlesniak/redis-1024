@@ -39,7 +39,7 @@ public class RedisServer
             var responseBytes = HandleCommand(commandline);
             stream.Write(responseBytes, 0, responseBytes.Length);
         }
-        
+
         // We never close this connection 🙈 ...
     }
 
@@ -63,13 +63,17 @@ public class RedisServer
             case "get":
                 var getKey = arrayValues[1].BulkString!;
                 var resultBytes = _commandHandler.Get(getKey);
-                // TODO(mlesniak) Error handling in case it does not exist.
+                if (resultBytes == null)
+                {
+                    return RedisData.nil().ToRedisSerialization();
+                }
+
                 // Create BulkString as response for now.
                 return RedisData.of(resultBytes!).ToRedisSerialization();
             default:
                 // Ignoring it for now.
                 return "-UNKNOWN COMMAND\r\n"u8.ToArray();
-        } 
+        }
     }
 
     // Command is always an array 
@@ -82,4 +86,3 @@ public class RedisServer
         return command;
     }
 }
-

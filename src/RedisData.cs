@@ -26,10 +26,20 @@ public class RedisData
                 });
                 break;
             case RedisDataType.BulkString:
-                sb.Append($"${BulkString!.Length}");
+                // Handle nil responses, which are modeled as bulk
+                // strings with a negative length.
+                if (BulkString == null)
+                {
+                    sb.Append("$-1");
+                }
+                else
+                {
+                    sb.Append($"${BulkString!.Length}");
+                    sb.Append("\r\n");
+                    sb.Append(BulkString);
+                }
                 sb.Append("\r\n");
-                sb.Append(BulkString);
-                sb.Append("\r\n");
+
                 break;
             default:
                 throw new ArgumentOutOfRangeException();
@@ -47,4 +57,6 @@ public class RedisData
 
     public static RedisData of(params RedisData[] arrayElements) =>
         new() { Type = RedisDataType.Array, ArrayValues = arrayElements.ToList() };
+
+    public static RedisData nil() => new() { Type = RedisDataType.BulkString };
 }
