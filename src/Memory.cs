@@ -3,7 +3,7 @@ namespace Lesniak.Redis;
 public class Memory
 {
     // We will add expiration time later.
-    private readonly Dictionary<string, byte[]> _memory = new();
+    protected readonly Dictionary<string, byte[]> _memory = new();
 
     public void Set(string key, byte[] value)
     {
