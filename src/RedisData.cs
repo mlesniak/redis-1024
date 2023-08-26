@@ -40,6 +40,11 @@ public class RedisData
 
     public static RedisData of(string s) => new() { Type = RedisDataType.BulkString, BulkString = s };
 
+    // Is this always correct?
+    public static RedisData of(byte[] bs) =>
+        new() { Type = RedisDataType.BulkString, BulkString = Encoding.ASCII.GetString(bs) };
+
+
     public static RedisData of(params RedisData[] arrayElements) =>
         new() { Type = RedisDataType.Array, ArrayValues = arrayElements.ToList() };
 }

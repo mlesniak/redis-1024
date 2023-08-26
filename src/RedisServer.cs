@@ -1,16 +1,19 @@
 using System.ComponentModel.Design;
 using System.Net;
 using System.Net.Sockets;
+using System.Text;
 
 namespace Lesniak.Redis;
 
 public class RedisServer
 {
-    private TcpListener _server;
+    private readonly TcpListener _server;
+    private readonly CommandHandler _commandHandler;
 
     public RedisServer(int port = 6379)
     {
-        _server = new(IPAddress.Loopback, port);
+        _server = new TcpListener(IPAddress.Loopback, port);
+        _commandHandler = new CommandHandler(new Memory());
     }
 
     public void Start()
@@ -28,29 +31,55 @@ public class RedisServer
         HandleConnection(stream);
     }
 
-    private static void HandleConnection(NetworkStream stream)
+    private void HandleConnection(NetworkStream stream)
     {
         while (true)
         {
-            ReadNextCommand(stream);
-
-            // Default response. We have to figure out
-            // semantics and actual responses for different
-            // commands.
-            var responseBytes = "+OK\r\n"u8.ToArray();
+            var commandline = ReadCommandline(stream);
+            var responseBytes = HandleCommand(commandline);
             stream.Write(responseBytes, 0, responseBytes.Length);
         }
         
         // We never close this connection 🙈 ...
     }
 
+    // No error handling for now.
+    private byte[] HandleCommand(RedisData commandline)
+    {
+        // Start simple, write tests, refactor...
+        List<RedisData> arrayValues = commandline.ArrayValues!;
+        var command = arrayValues[0].BulkString!;
+        switch (command)
+        {
+            case "set":
+                var setKey = arrayValues[1].BulkString!;
+                byte[] value = arrayValues[2].Type switch
+                {
+                    RedisDataType.BulkString => Encoding.ASCII.GetBytes(arrayValues[2].BulkString!),
+                    _ => throw new ArgumentOutOfRangeException()
+                };
+                _commandHandler.Set(setKey, value);
+                return "+OK\r\n"u8.ToArray();
+            case "get":
+                var getKey = arrayValues[1].BulkString!;
+                var resultBytes = _commandHandler.Get(getKey);
+                // TODO(mlesniak) Error handling in case it does not exist.
+                // Create BulkString as response for now.
+                return RedisData.of(resultBytes!).ToRedisSerialization();
+            default:
+                // Ignoring it for now.
+                return "-UNKNOWN COMMAND\r\n"u8.ToArray();
+        } 
+    }
+
     // Command is always an array 
-    private static void ReadNextCommand(NetworkStream stream)
+    private static RedisData ReadCommandline(NetworkStream stream)
     {
         byte[] buffer = new byte[16384];
         stream.Read(buffer);
         var command = RedisDataParser.Parse(buffer);
         Console.WriteLine($"Command:\r\n{command}");
+        return command;
     }
 }
 
