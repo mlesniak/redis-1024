@@ -1,7 +1,7 @@
 using System.Text;
 
 using Lesniak.Redis.Core;
-using Lesniak.Redis.Model;
+using Lesniak.Redis.Core.Model;
 using Lesniak.Redis.Storage;
 
 using static Xunit.Assert;

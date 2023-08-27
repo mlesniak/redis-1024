@@ -1,4 +1,4 @@
-using Lesniak.Redis.Model;
+using Lesniak.Redis.Core.Model;
 using Lesniak.Redis.Utils;
 
 using static Xunit.Assert;

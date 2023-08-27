@@ -1,4 +1,4 @@
-namespace Lesniak.Redis.Model;
+namespace Lesniak.Redis.Core.Model;
 
 public enum RedisDataType
 {

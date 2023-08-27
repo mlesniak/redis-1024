@@ -2,7 +2,7 @@ using System.Net;
 using System.Net.Sockets;
 
 using Lesniak.Redis.Core;
-using Lesniak.Redis.Model;
+using Lesniak.Redis.Core.Model;
 using Lesniak.Redis.Storage;
 
 namespace Lesniak.Redis.Server;

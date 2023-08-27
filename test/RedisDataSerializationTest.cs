@@ -1,6 +1,6 @@
 using System.Text;
 
-using Lesniak.Redis.Model;
+using Lesniak.Redis.Core.Model;
 
 using static Xunit.Assert;
 

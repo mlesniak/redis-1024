@@ -1,6 +1,6 @@
 using System.Text;
 
-namespace Lesniak.Redis.Model;
+namespace Lesniak.Redis.Core.Model;
 
 public static class RedisDataParser
 {
