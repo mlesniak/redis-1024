@@ -1,7 +1,5 @@
-using System.ComponentModel.Design;
 using System.Net;
 using System.Net.Sockets;
-using System.Text;
 
 namespace Lesniak.Redis;
 
