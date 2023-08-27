@@ -1,27 +1,47 @@
 using System.Text;
+using static Xunit.Assert;
 
 namespace Lesniak.Redis.Test;
 
 public class CommandHandlerTest
 {
-    private readonly CommandHandler sut;
+    private readonly Memory _memory;
+    private readonly CommandHandler _sut;
 
+    // Will be recreated every time we instantiate
+    // a new test.
     public CommandHandlerTest()
     {
-        sut = new(new Memory());
+        _memory = new Memory();
+        _sut = new(_memory);
     }
 
     [Fact]
     public void Execute_InvalidCommand_ReturnsError()
     {
-        var commandLine = ToCommandLine("not-a-command");
+        var result = _sut.Execute(ToCommandLine("not-a-command"));
 
-        var result = sut.Execute(commandLine);
-
-        Assert.Equal("-UNKNOWN COMMAND\r\n", Encoding.ASCII.GetString(result));
+        Equal("-UNKNOWN COMMAND\r\n", Encoding.ASCII.GetString(result));
     }
+    
+    [Fact]
+    public void Execute_SetCommand_Succeeds()
+    {
+        var result = _sut.Execute(ToCommandLine("set name value"));
 
-    // TODO(mlesniak) write more tests... 
+        Equal("+OK\r\n", Encoding.ASCII.GetString(result));
+        Equal("value"u8.ToArray(), _memory.Get("name"));
+    }
+    
+    [Fact]
+    public void Execute_GetCommand_Succeeds()
+    {
+        _memory.Set("name", "value"u8.ToArray());
+
+        var result = _sut.Execute(ToCommandLine("get name"));
+
+        Equal("$5\r\nvalue\r\n"u8.ToArray(), result);
+    }
     
     private static RedisData ToCommandLine(string s) =>
         RedisData.of(s.Split(" ").Select(elem => RedisData.of(elem)).ToArray());
