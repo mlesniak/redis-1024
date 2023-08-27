@@ -1,3 +1,4 @@
+using System.ComponentModel.Design;
 using System.Net;
 using System.Net.Sockets;
 
@@ -23,10 +24,14 @@ public class RedisServer
 
     private void Listen()
     {
-        TcpClient client = _server.AcceptTcpClient();
-        Console.WriteLine("Client connected");
-        var stream = client.GetStream();
-        HandleConnection(stream);
+        while (true)
+        {
+            TcpClient client = _server.AcceptTcpClient();
+            Console.WriteLine("Client connected");
+            var stream = client.GetStream();
+            // TODO(mlesniak) Spawn thread.
+            HandleConnection(stream);
+        }
     }
 
     private void HandleConnection(NetworkStream stream)
@@ -34,19 +39,31 @@ public class RedisServer
         while (true)
         {
             var commandline = ReadCommandline(stream);
+            if (commandline == null)
+            {
+                break;
+            }
+
             var responseBytes = _commandHandler.Execute(commandline);
             stream.Write(responseBytes, 0, responseBytes.Length);
         }
 
-        // TODO(mlesniak) We never close this connection 🙈 ...
+        Console.WriteLine("Client disconnected.");
+        stream.Close();
     }
 
     // Command is always an array 
-    private static RedisData ReadCommandline(NetworkStream stream)
+    private static RedisData? ReadCommandline(NetworkStream stream)
     {
         // TODO(mlesniak) We are not handling larger input.
         byte[] buffer = new byte[16384];
-        stream.Read(buffer);
+        var readChars = stream.Read(buffer);
+        if (readChars == 0)
+        {
+            // EOF
+            return null;
+        }
+
         return RedisDataParser.Parse(buffer);
     }
 }
