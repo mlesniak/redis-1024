@@ -29,11 +29,16 @@ public class RedisServer
     {
         while (true)
         {
+            Console.WriteLine("Waiting for connections...");
             TcpClient client = _server.AcceptTcpClient();
-            Console.WriteLine("Client connected");
-            var stream = client.GetStream();
-            // TODO(mlesniak) Spawn thread.
-            HandleConnection(stream);
+            new Thread(() =>
+            {
+                Console.WriteLine("Client connected");
+                var stream = client.GetStream();
+                HandleConnection(stream);
+                Console.WriteLine("Client disconnected.");
+                stream.Close();
+            }).Start();
         }
     }
 
@@ -50,9 +55,6 @@ public class RedisServer
             var responseBytes = _commandHandler.Execute(commandline);
             stream.Write(responseBytes, 0, responseBytes.Length);
         }
-
-        Console.WriteLine("Client disconnected.");
-        stream.Close();
     }
 
     // Command is always an array 
