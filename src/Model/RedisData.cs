@@ -1,6 +1,6 @@
 using System.Text;
 
-namespace Lesniak.Redis;
+namespace Lesniak.Redis.Model;
 
 public class RedisData
 {

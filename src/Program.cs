@@ -1,3 +1,3 @@
-﻿using Lesniak.Redis;
+﻿using Lesniak.Redis.Server;
 
 new RedisServer().Start();

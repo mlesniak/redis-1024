@@ -1,8 +1,11 @@
-using System.ComponentModel.Design;
 using System.Net;
 using System.Net.Sockets;
 
-namespace Lesniak.Redis;
+using Lesniak.Redis.Core;
+using Lesniak.Redis.Model;
+using Lesniak.Redis.Storage;
+
+namespace Lesniak.Redis.Server;
 
 public class RedisServer
 {

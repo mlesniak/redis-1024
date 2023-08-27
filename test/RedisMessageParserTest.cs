@@ -1,3 +1,6 @@
+using Lesniak.Redis.Model;
+using Lesniak.Redis.Utils;
+
 using static Xunit.Assert;
 
 namespace Lesniak.Redis.Test;

@@ -1,6 +1,4 @@
-using System.Reflection;
-
-namespace Lesniak.Redis;
+namespace Lesniak.Redis.Model;
 
 public enum RedisDataType
 {

@@ -1,4 +1,4 @@
-namespace Lesniak.Redis;
+namespace Lesniak.Redis.Storage;
 
 public class Memory
 {

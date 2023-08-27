@@ -1,5 +1,7 @@
 using System.Text;
 
+using Lesniak.Redis.Model;
+
 using static Xunit.Assert;
 
 namespace Lesniak.Redis.Test;

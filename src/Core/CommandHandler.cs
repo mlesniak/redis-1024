@@ -1,6 +1,9 @@
 using System.Text;
 
-namespace Lesniak.Redis;
+using Lesniak.Redis.Model;
+using Lesniak.Redis.Storage;
+
+namespace Lesniak.Redis.Core;
 
 public class CommandHandler
 {

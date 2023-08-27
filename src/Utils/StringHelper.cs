@@ -1,6 +1,6 @@
 using System.Text;
 
-namespace Lesniak.Redis;
+namespace Lesniak.Redis.Utils;
 
 public static class StringHelper
 {
