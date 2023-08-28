@@ -64,6 +64,12 @@ public class RedisServer
 
     private static RedisData? ReadCommandline(NetworkStream networkStream)
     {
+        var input = Read(networkStream);
+        return input == null ? null : RedisDataParser.Parse(input);
+    }
+
+    private static byte[]? Read(NetworkStream networkStream)
+    {
         int bufferSize = 1024;
         int maxBuffer = 1024 * 1024;
 
@@ -82,6 +88,7 @@ public class RedisServer
             // Prevent memory-flooding by simulating an EOF
             // if a client tries to send too much data.
             // TODO(mlesniak) How does Redis handle this cases?
+            //                Are there global limits?
             if (memoryStream.Length >= maxBuffer)
             {
                 return null;
@@ -94,8 +101,7 @@ public class RedisServer
             return null;
         }
 
-        // TODO(mlesniak) split into reading and parsing
-        //                currently mixed up.
-        return RedisDataParser.Parse(memoryStream.ToArray());
+        byte[] input = memoryStream.ToArray();
+        return input;
     }
 }
