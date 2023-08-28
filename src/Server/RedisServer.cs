@@ -1,3 +1,4 @@
+using System.ComponentModel.Design;
 using System.Net;
 using System.Net.Sockets;
 
@@ -35,14 +36,14 @@ public class RedisServer
             {
                 Console.WriteLine("Client connected");
                 var stream = client.GetStream();
-                HandleConnection(stream);
+                HandleClient(stream);
                 Console.WriteLine("Client disconnected.");
                 stream.Close();
             }).Start();
         }
     }
 
-    private void HandleConnection(NetworkStream stream)
+    private void HandleClient(NetworkStream stream)
     {
         while (true)
         {
@@ -53,22 +54,36 @@ public class RedisServer
             }
 
             var responseBytes = _commandHandler.Execute(commandline);
+            // TODO(mlesniak) different levels of abstraction?
             stream.Write(responseBytes, 0, responseBytes.Length);
         }
     }
 
-    // Command is always an array 
-    private static RedisData? ReadCommandline(NetworkStream stream)
+    // TODO(mlesniak) Command is always an array -- we don't have a command abstraction. 
+    private static RedisData? ReadCommandline(NetworkStream networkStream)
     {
-        // TODO(mlesniak) We are not handling larger input.
-        byte[] buffer = new byte[16384];
-        var readChars = stream.Read(buffer);
-        if (readChars == 0)
+        int bufferSize = 4;
+        byte[] buffer = new byte[bufferSize];
+        using MemoryStream memoryStream = new();
+
+        int bytesRead;
+        while ((bytesRead = networkStream.Read(buffer, 0, buffer.Length)) > 0)
         {
-            // EOF
+            memoryStream.Write(buffer, 0, bytesRead);
+            if (!networkStream.DataAvailable)
+            {
+                break;
+            }
+        }
+
+        if (memoryStream.Length == 0)
+        {
+            // Client send EOF.
             return null;
         }
 
-        return RedisDataParser.Parse(buffer);
+        // TODO(mlesniak) split into reading and parsing
+        //                currently mixed up.
+        return RedisDataParser.Parse(memoryStream.ToArray());
     }
 }
