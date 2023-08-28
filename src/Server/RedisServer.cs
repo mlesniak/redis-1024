@@ -60,11 +60,13 @@ public class RedisServer
     }
 
     // TODO(mlesniak) Command is always an array -- we don't have a command abstraction. 
+    // TODO(mlesniak)  add unit tests for ReadCommandLine from a stream
+
     private static RedisData? ReadCommandline(NetworkStream networkStream)
     {
         int bufferSize = 1024;
         int maxBuffer = 1024 * 1024;
-        
+
         byte[] buffer = new byte[bufferSize];
         using MemoryStream memoryStream = new();
 
@@ -76,11 +78,11 @@ public class RedisServer
             {
                 break;
             }
-            
+
             // Prevent memory-flooding by simulating an EOF
             // if a client tries to send too much data.
             // TODO(mlesniak) How does Redis handle this cases?
-            if (memoryStream.Length >= maxBuffer)k
+            if (memoryStream.Length >= maxBuffer)
             {
                 return null;
             }
