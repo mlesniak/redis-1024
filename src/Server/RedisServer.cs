@@ -62,7 +62,7 @@ public class RedisServer
     // TODO(mlesniak) Command is always an array -- we don't have a command abstraction. 
     private static RedisData? ReadCommandline(NetworkStream networkStream)
     {
-        int bufferSize = 4;
+        int bufferSize = 1024;
         byte[] buffer = new byte[bufferSize];
         using MemoryStream memoryStream = new();
 
