@@ -63,6 +63,8 @@ public class RedisServer
     private static RedisData? ReadCommandline(NetworkStream networkStream)
     {
         int bufferSize = 1024;
+        int maxBuffer = 1024 * 1024;
+        
         byte[] buffer = new byte[bufferSize];
         using MemoryStream memoryStream = new();
 
@@ -73,6 +75,14 @@ public class RedisServer
             if (!networkStream.DataAvailable)
             {
                 break;
+            }
+            
+            // Prevent memory-flooding by simulating an EOF
+            // if a client tries to send too much data.
+            // TODO(mlesniak) How does Redis handle this cases?
+            if (memoryStream.Length >= maxBuffer)k
+            {
+                return null;
             }
         }
 
