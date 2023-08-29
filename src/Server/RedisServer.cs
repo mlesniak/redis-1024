@@ -6,6 +6,8 @@ using Lesniak.Redis.Core.Model;
 
 namespace Lesniak.Redis.Server;
 
+// TODO(mlesniak)  add unit tests for ReadCommandLine from a stream
+// TODO(mlesniak) Add proper logging
 public class RedisServer
 {
     private readonly TcpListener _server;
@@ -30,6 +32,8 @@ public class RedisServer
         {
             Console.WriteLine("Waiting for connections...");
             TcpClient client = _server.AcceptTcpClient();
+
+            // TODO(mlesniak) Support async / await - pattern.
             new Thread(() =>
             {
                 Console.WriteLine("Client connected");
@@ -43,22 +47,15 @@ public class RedisServer
 
     private void HandleClient(NetworkStream stream)
     {
-        while (true)
+        while (ReadCommandline(stream) is { } commandline)
         {
-            var commandline = ReadCommandline(stream);
-            if (commandline == null)
-            {
-                break;
-            }
-
             var responseBytes = _commandHandler.Execute(commandline);
-            // TODO(mlesniak) different levels of abstraction?
             stream.Write(responseBytes, 0, responseBytes.Length);
         }
     }
-
-    // TODO(mlesniak) Command is always an array -- we don't have a command abstraction. 
-    // TODO(mlesniak)  add unit tests for ReadCommandLine from a stream
+    
+    // a command is a special redisdata of type array with helper functions
+    // for the arguments. defined in server.
 
     private static RedisData? ReadCommandline(NetworkStream networkStream)
     {
