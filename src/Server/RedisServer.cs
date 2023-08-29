@@ -12,11 +12,13 @@ public class RedisServer
 {
     private readonly TcpListener _server;
     private readonly CommandHandler _commandHandler;
+    private readonly Configuration _configuration;
 
-    public RedisServer(CommandHandler commandHandler, int port = 6379)
+    public RedisServer(Configuration configuration, CommandHandler commandHandler, int port = 6379)
     {
         _server = new TcpListener(IPAddress.Loopback, port);
         _commandHandler = commandHandler;
+        _configuration = configuration;
     }
 
     public void Run()
@@ -57,17 +59,16 @@ public class RedisServer
     // a command is a special redisdata of type array with helper functions
     // for the arguments. defined in server.
 
-    private static RedisData? ReadCommandline(NetworkStream networkStream)
+    private RedisData? ReadCommandline(NetworkStream networkStream)
     {
         var input = Read(networkStream);
         return input == null ? null : RedisDataParser.Parse(input);
     }
 
-    private static byte[]? Read(NetworkStream networkStream)
+    private byte[]? Read(NetworkStream networkStream)
     {
-        // TODO(mlesniak) Make some of these values configurable.
         int bufferSize = 1024;
-        int maxBuffer = 1024 * 1024;
+        int maxBuffer = _configuration.MaxReadBuffer;
 
         byte[] buffer = new byte[bufferSize];
         using MemoryStream memoryStream = new();
