@@ -65,6 +65,7 @@ public class RedisServer
 
     private static byte[]? Read(NetworkStream networkStream)
     {
+        // TODO(mlesniak) Make some of these values configurable.
         int bufferSize = 1024;
         int maxBuffer = 1024 * 1024;
 
@@ -81,9 +82,10 @@ public class RedisServer
             }
 
             // Prevent memory-flooding by simulating an EOF
-            // if a client tries to send too much data.
-            // TODO(mlesniak) How does Redis handle this cases?
-            //                Are there global limits?
+            // if a client tries to send too much data. The
+            // connection will be closed. This is the same
+            // behavior as implemented by the standard redis
+            // server.
             if (memoryStream.Length >= maxBuffer)
             {
                 return null;
