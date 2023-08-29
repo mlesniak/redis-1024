@@ -1,10 +1,8 @@
-using System.ComponentModel.Design;
 using System.Net;
 using System.Net.Sockets;
 
 using Lesniak.Redis.Core;
 using Lesniak.Redis.Core.Model;
-using Lesniak.Redis.Storage;
 
 namespace Lesniak.Redis.Server;
 
@@ -13,13 +11,13 @@ public class RedisServer
     private readonly TcpListener _server;
     private readonly CommandHandler _commandHandler;
 
-    public RedisServer(int port = 6379)
+    public RedisServer(CommandHandler commandHandler, int port = 6379)
     {
         _server = new TcpListener(IPAddress.Loopback, port);
-        _commandHandler = new CommandHandler(new Memory());
+        _commandHandler = commandHandler;
     }
 
-    public void Start()
+    public void Run()
     {
         _server.Start();
         Console.WriteLine("Server started, listening for clients.");

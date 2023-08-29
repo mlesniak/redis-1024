@@ -1,3 +1,9 @@
-﻿using Lesniak.Redis.Server;
+﻿using Lesniak.Redis.Core;
+using Lesniak.Redis.Server;
+using Lesniak.Redis.Storage;
 
-new RedisServer().Start();
+var storage = new Memory();
+var commandHandler = new CommandHandler(storage);
+var networkServer = new RedisServer(commandHandler);
+
+networkServer.Run();
