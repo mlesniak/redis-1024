@@ -4,6 +4,7 @@ namespace Lesniak.Redis.Core.Model;
 
 public class RedisData
 {
+    // TODO(mlesniak) Use inheritance
     public RedisDataType Type { get; set; }
     public string? BulkString { get; set; }
     public List<RedisData>? ArrayValues { get; set; }
