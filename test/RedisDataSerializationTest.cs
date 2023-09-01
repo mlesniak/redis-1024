@@ -6,14 +6,14 @@ using static Xunit.Assert;
 
 namespace Lesniak.Redis.Test;
 
-public class RedisDataSerializationTest
+public class RedisTypeSerializationTest
 {
     [Fact]
-    public void ToRedisSerialization_BulkString_ReturnsValidInput()
+    public void Serialize_BulkString_ReturnsValidInput()
     {
-        var data = RedisData.of("HELLO");
+        var data = RedisType.of("HELLO");
 
-        var serialized = data.ToRedisSerialization();
+        var serialized = data.Serialize();
 
         Equal(
             ToByteArray("""
@@ -26,12 +26,12 @@ public class RedisDataSerializationTest
     [Fact]
     public void ToRedisMessage_SimpleArray_ReturnsCorrectResult()
     {
-        var data = RedisData.of(
-            RedisData.of("HELLO"),
-            RedisData.of("FOO")
+        var data = RedisType.of(
+            RedisType.of("HELLO"),
+            RedisType.of("FOO")
         );
 
-        var serialized = data.ToRedisSerialization();
+        var serialized = data.Serialize();
 
         Equal(
             ToByteArray("""
@@ -47,15 +47,15 @@ public class RedisDataSerializationTest
     [Fact]
     public void ToRedisMessage_NestedArray_ReturnsCorrectResult()
     {
-        var data = RedisData.of(
-            RedisData.of(
-                RedisData.of("BAR"),
-                RedisData.of("HELLO")
+        var data = RedisType.of(
+            RedisType.of(
+                RedisType.of("BAR"),
+                RedisType.of("HELLO")
             ),
-            RedisData.of("FOO")
+            RedisType.of("FOO")
         );
 
-        var serialized = data.ToRedisSerialization();
+        var serialized = data.Serialize();
 
         Equal(
             ToByteArray("""

@@ -51,7 +51,7 @@ public class RedisServer
     {
         while (ReadCommandline(stream) is { } commandline)
         {
-            var responseBytes = _commandHandler.Execute(commandline);
+            var responseBytes = _commandHandler.Execute((RedisArray)commandline);
             stream.Write(responseBytes, 0, responseBytes.Length);
         }
     }
@@ -59,10 +59,10 @@ public class RedisServer
     // a command is a special redisdata of type array with helper functions
     // for the arguments. defined in server.
 
-    private RedisData? ReadCommandline(NetworkStream networkStream)
+    private RedisType? ReadCommandline(NetworkStream networkStream)
     {
         var input = Read(networkStream);
-        return input == null ? null : RedisDataParser.Parse(input);
+        return input == null ? null : RedisTypeParser.Parse(input);
     }
 
     private byte[]? Read(NetworkStream networkStream)

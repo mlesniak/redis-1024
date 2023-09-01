@@ -48,6 +48,6 @@ public class CommandHandlerTest
         Equal("$5\r\nvalue\r\n"u8.ToArray(), result);
     }
     
-    private static RedisData ToCommandLine(string s) =>
-        RedisData.of(s.Split(" ").Select(elem => RedisData.of(elem)).ToArray());
+    private static RedisArray ToCommandLine(string s) =>
+        RedisType.of(s.Split(" ").Select(elem => RedisType.of(elem)).ToArray());
 }

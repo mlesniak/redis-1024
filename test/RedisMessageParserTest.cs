@@ -26,10 +26,10 @@ public class RedisMessageParserTest
                       HELLO
                       """.ToRedisMessage();
         
-        var data = RedisDataParser.Parse(message);
+        var data = RedisTypeParser.Parse(message);
 
-        Equal(RedisDataType.BulkString, data.Type);
-        Equal("HELLO", data.BulkString);
+        IsType<RedisString>(data);
+        Equal("HELLO", ((RedisString)data).Value);
     }
 
     [Fact]
@@ -43,13 +43,14 @@ public class RedisMessageParserTest
                       FOO
                       """.ToRedisMessage();
         
-        var data = RedisDataParser.Parse(message);
+        var data = RedisTypeParser.Parse(message);
         
-        Equal(RedisDataType.Array, data.Type);
-        Equal(RedisDataType.BulkString, data.ArrayValues![0].Type);
-        Equal("HELLO", data.ArrayValues![0].BulkString);
-        Equal(RedisDataType.BulkString, data.ArrayValues![1].Type);
-        Equal("FOO", data.ArrayValues![1].BulkString);
+        IsType<RedisArray>(data);
+        RedisArray array = (RedisArray)data;
+        IsType<RedisString>(array.Values[0]);
+        Equal("HELLO", ((RedisString)array.Values[0]).Value);
+        IsType<RedisString>(array.Values[1]);
+        Equal("FOO", ((RedisString)array.Values[1]).Value);
     }
     
     [Fact]
@@ -66,16 +67,17 @@ public class RedisMessageParserTest
                       FOO
                       """.ToRedisMessage();
         
-        var data = RedisDataParser.Parse(message);
+        var data = RedisTypeParser.Parse(message);
         
-        Equal(RedisDataType.Array, data.Type);
         
-        Equal(RedisDataType.Array, data.ArrayValues![0].Type);
-        var array = data.ArrayValues![0];
-        Equal("BAR", array.ArrayValues?[0].BulkString);
-        Equal("HELLO", array.ArrayValues?[1].BulkString);
-        Equal(RedisDataType.BulkString, data.ArrayValues![1].Type);
-        Equal("FOO", data.ArrayValues?[1].BulkString);
+        IsType<RedisArray>(data);
+        RedisArray array = (RedisArray)data;
+        
+        IsType<RedisArray>(array.Values[0]);
+        RedisArray subarray = (RedisArray)array.Values[0];
+        Equal("BAR", ((RedisString)(subarray.Values[0])).Value);
+        Equal("HELLO", ((RedisString)(subarray.Values[1])).Value);
+        IsType<RedisString>(array.Values[1]);
+        Equal("FOO", ((RedisString)array.Values[1]).Value);
     }
-
 }

@@ -1,7 +1,7 @@
 namespace Lesniak.Redis.Core.Model;
 
-public enum RedisDataType
-{
-    Array,
-    BulkString,
-}
+// public enum RedisDataType
+// {
+//     Array,
+//     BulkString,
+// }
