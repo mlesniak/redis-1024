@@ -62,7 +62,7 @@ public class RedisServer
     private RedisType? ReadCommandline(NetworkStream networkStream)
     {
         var input = Read(networkStream);
-        return input == null ? null : RedisTypeParser.Parse(input);
+        return input == null ? null : RedisType.Deserialize(input);
     }
 
     private byte[]? Read(NetworkStream networkStream)
