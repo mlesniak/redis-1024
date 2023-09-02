@@ -11,7 +11,7 @@ public class RedisTypeSerializationTest
     [Fact]
     public void Serialize_BulkString_ReturnsValidInput()
     {
-        var data = RedisType.of("HELLO");
+        var data = RedisType.Of("HELLO");
 
         var serialized = data.Serialize();
 
@@ -26,9 +26,9 @@ public class RedisTypeSerializationTest
     [Fact]
     public void ToRedisMessage_SimpleArray_ReturnsCorrectResult()
     {
-        var data = RedisType.of(
-            RedisType.of("HELLO"),
-            RedisType.of("FOO")
+        var data = RedisType.Of(
+            RedisType.Of("HELLO"),
+            RedisType.Of("FOO")
         );
 
         var serialized = data.Serialize();
@@ -47,12 +47,12 @@ public class RedisTypeSerializationTest
     [Fact]
     public void ToRedisMessage_NestedArray_ReturnsCorrectResult()
     {
-        var data = RedisType.of(
-            RedisType.of(
-                RedisType.of("BAR"),
-                RedisType.of("HELLO")
+        var data = RedisType.Of(
+            RedisType.Of(
+                RedisType.Of("BAR"),
+                RedisType.Of("HELLO")
             ),
-            RedisType.of("FOO")
+            RedisType.Of("FOO")
         );
 
         var serialized = data.Serialize();

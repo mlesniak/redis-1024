@@ -2,7 +2,6 @@ using System.Text;
 
 namespace Lesniak.Redis.Core.Model;
 
-// TODO(mlesniak) better name?
 public static class RedisTypeParser
 {
     private delegate (RedisType, int) Parser(byte[] data, int offset);

@@ -7,19 +7,22 @@ namespace Lesniak.Redis.Core.Model;
 public abstract class RedisType
 {
     public abstract byte[] Serialize();
+    
+    // TODO(mlesniak)  What if I use a Span here? Then, no offset would be
+    //                 needed for the deserialize part?
 
     // TODO(mlesniak) Strange design decision?
     public override string ToString() =>
         Encoding.ASCII.GetString(Serialize());
     
-    public static RedisString of(string? s) => new RedisString(s);
+    public static RedisString Of(string? s) => new RedisString(s);
 
     // TODO(mlesniak) Is this always correct?
-    public static RedisString of(byte[] bs) => new RedisString(Encoding.ASCII.GetString(bs));
+    public static RedisString Of(byte[] bs) => new RedisString(Encoding.ASCII.GetString(bs));
 
-    public static RedisArray of(params RedisType[] elements) => new RedisArray(elements);
+    public static RedisArray Of(params RedisType[] elements) => new RedisArray(elements);
 
-    public static RedisString nil() => new RedisString(null);
+    public static RedisString Nil() => new RedisString(null);
 }
 
 // TODO(mlesniak) Should a RedisString not be a byte[] array without any encoding?
