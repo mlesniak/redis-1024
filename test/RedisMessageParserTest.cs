@@ -47,10 +47,10 @@ public class RedisMessageParserTest
         
         IsType<RedisArray>(data);
         RedisArray array = (RedisArray)data;
-        IsType<RedisString>(array.Values[0]);
-        Equal("HELLO", ((RedisString)array.Values[0]).Value);
-        IsType<RedisString>(array.Values[1]);
-        Equal("FOO", ((RedisString)array.Values[1]).Value);
+        IsType<RedisString>(array[0]);
+        Equal("HELLO", ((RedisString)array[0]).Value);
+        IsType<RedisString>(array[1]);
+        Equal("FOO", ((RedisString)array[1]).Value);
     }
     
     [Fact]
@@ -69,15 +69,14 @@ public class RedisMessageParserTest
         
         var data = RedisType.Deserialize(message);
         
-        
         IsType<RedisArray>(data);
         RedisArray array = (RedisArray)data;
         
-        IsType<RedisArray>(array.Values[0]);
-        RedisArray subarray = (RedisArray)array.Values[0];
-        Equal("BAR", ((RedisString)(subarray.Values[0])).Value);
-        Equal("HELLO", ((RedisString)(subarray.Values[1])).Value);
-        IsType<RedisString>(array.Values[1]);
-        Equal("FOO", ((RedisString)array.Values[1]).Value);
+        IsType<RedisArray>(array[0]);
+        RedisArray subarray = (RedisArray)array[0];
+        Equal("BAR", ((RedisString)(subarray[0])).Value);
+        Equal("HELLO", ((RedisString)(subarray[1])).Value);
+        IsType<RedisString>(array[1]);
+        Equal("FOO", ((RedisString)array[1]).Value);
     }
 }

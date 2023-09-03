@@ -6,6 +6,8 @@ public abstract class RedisType
 {
     private delegate (RedisType, int) Deserializer(byte[] data, int offset);
 
+    // TODO(mlesniak) Add support for casting to a type variable?
+    // TODO(mlesniak) or call correct method directly if you know the format?
     public static RedisType Deserialize(byte[] data) => Deserialize(data, 0).Item1;
 
     private static Deserializer GetDeserializer(byte identifier)
