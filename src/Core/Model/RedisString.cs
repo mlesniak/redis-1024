@@ -17,7 +17,7 @@ public class RedisString : RedisType
     
     public static RedisString Nil() => new(null);
 
-    public static (RedisType, int) Deserialize(byte[] data, int offset)
+    public static new (RedisType, int) Deserialize(byte[] data, int offset)
     {
         var lengthEnd = Array.IndexOf(data, (byte)'\r', offset);
         var length = Int32.Parse(Encoding.ASCII.GetString(data, offset + 1, lengthEnd - offset - 1));

@@ -13,7 +13,7 @@ public class RedisArray : RedisType
     
     public static RedisArray From(params RedisType[] elements) => new(elements);
 
-    public static (RedisType, int) Deserialize(byte[] data, int offset)
+    public static new (RedisType, int) Deserialize(byte[] data, int offset)
     {
         RedisArray result = new();
         var numElementsIndexEnd = Array.IndexOf(data, (byte)'\r', offset);
