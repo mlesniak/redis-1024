@@ -4,6 +4,10 @@ namespace Lesniak.Redis.Core.Model;
 
 public abstract class RedisType
 {
+    public static T Deserialize<T>(byte[] data) where T : RedisType => (T)Deserialize(data, 0).Item1;
+
+    public abstract byte[] Serialize();
+
     protected static (RedisType, int) Deserialize(byte[] data, int offset)
     {
         byte identifier = data[offset];
@@ -18,10 +22,6 @@ public abstract class RedisType
         return method(data, offset);
     }
 
-    public static T Deserialize<T>(byte[] data) where T : RedisType => (T)Deserialize(data, 0).Item1;
-
-    public abstract byte[] Serialize();
-    
     // For the time being, we use the serialized representation to present
     // a readable form of this type.
     public override string ToString() => Encoding.ASCII.GetString(Serialize());

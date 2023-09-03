@@ -5,19 +5,13 @@ namespace Lesniak.Redis.Core.Model;
 public class RedisString : RedisType
 {
     public const char Identifier = '$';
-    
-    public string? Value { get; set; }
+
+    public string? Value { get; }
 
     private RedisString(string? value)
     {
         Value = value;
     }
-    
-    public static RedisString From(string? s) => new(s);
-    
-    public static RedisString From(byte[] bs) => new(Encoding.ASCII.GetString(bs));
-    
-    public static RedisString Nil() => new(null);
 
     public static new (RedisType, int) Deserialize(byte[] data, int offset)
     {
@@ -27,7 +21,7 @@ public class RedisString : RedisType
         RedisString result = new(Encoding.ASCII.GetString(data, stringStart, length));
         return (result, stringStart + length + 2);
     }
-    
+
     public override byte[] Serialize()
     {
         var sb = new StringBuilder();
@@ -46,4 +40,10 @@ public class RedisString : RedisType
         sb.Append("\r\n");
         return Encoding.ASCII.GetBytes(sb.ToString());
     }
+
+    public static RedisString From(string? s) => new(s);
+
+    public static RedisString From(byte[] bs) => new(Encoding.ASCII.GetString(bs));
+
+    public static RedisString Nil() => new(null);
 }
