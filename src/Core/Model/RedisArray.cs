@@ -7,17 +7,14 @@ public class RedisArray : RedisType
 {
     public const char Identifier = '*';
 
-    public List<RedisType> Values { get; }
-
-    public RedisType this[int index]
-    {
-        get { return Values[index]; }
-    }
-
     private RedisArray(params RedisType[] elements)
     {
         Values = elements.ToList();
     }
+
+    public List<RedisType> Values { get; }
+
+    public static RedisArray From(params RedisType[] elements) => new(elements);
 
     public static new (RedisType, int) Deserialize(byte[] data, int offset)
     {
@@ -49,5 +46,8 @@ public class RedisArray : RedisType
         return Encoding.ASCII.GetBytes(sb.ToString());
     }
 
-    public static RedisArray From(params RedisType[] elements) => new(elements);
+    public RedisType this[int index]
+    {
+        get { return Values[index]; }
+    }
 }
