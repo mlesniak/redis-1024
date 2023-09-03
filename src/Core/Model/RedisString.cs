@@ -21,12 +21,6 @@ public class RedisString : RedisType
         RedisString result = new(Encoding.ASCII.GetString(data, stringStart, length));
         return (result, stringStart + length + 2);
     }
-    
-    public static RedisString From(string? s) => new(s);
-
-    public static RedisString From(byte[] bs) => new(Encoding.ASCII.GetString(bs));
-
-    public static RedisString Nil() => new(null);
 
     public override byte[] Serialize()
     {
@@ -46,4 +40,10 @@ public class RedisString : RedisType
         sb.Append("\r\n");
         return Encoding.ASCII.GetBytes(sb.ToString());
     }
+
+    public static RedisString From(string? s) => new(s);
+
+    public static RedisString From(byte[] bs) => new(Encoding.ASCII.GetString(bs));
+
+    public static RedisString Nil() => new(null);
 }
