@@ -30,11 +30,11 @@ public class CommandHandler
                 var resultBytes = _memory.Get(getKey);
                 if (resultBytes == null)
                 {
-                    return RedisType.Nil().Serialize();
+                    return RedisString.Nil().Serialize();
                 }
 
                 // Create BulkString as response for now.
-                return RedisType.Of(resultBytes).Serialize();
+                return RedisString.From(resultBytes).Serialize();
             default:
                 // Ignoring it for now.
                 return "-UNKNOWN COMMAND\r\n"u8.ToArray();

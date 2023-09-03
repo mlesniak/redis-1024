@@ -49,5 +49,5 @@ public class CommandHandlerTest
     }
     
     private static RedisArray ToCommandLine(string s) =>
-        RedisType.Of(s.Split(" ").Select(elem => RedisType.Of(elem)).ToArray());
+        RedisArray.From(s.Split(" ").Select(elem => RedisString.From(elem)).ToArray());
 }
