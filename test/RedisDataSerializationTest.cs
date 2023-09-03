@@ -2,12 +2,21 @@ using System.Text;
 
 using Lesniak.Redis.Core.Model;
 
+using Xunit.Abstractions;
+
 using static Xunit.Assert;
 
 namespace Lesniak.Redis.Test;
 
 public class RedisTypeSerializationTest
 {
+    private readonly ITestOutputHelper _output;
+
+    public RedisTypeSerializationTest(ITestOutputHelper output)
+    {
+        _output = output;
+    }
+
     [Fact]
     public void Serialize_BulkString_ReturnsValidInput()
     {
@@ -45,6 +54,25 @@ public class RedisTypeSerializationTest
     }
 
     [Fact]
+    public void ToRedisMessage_SimpleArray_AllowEnumeration()
+    {
+        var data = RedisArray.From(
+            RedisString.From("HELLO"),
+            RedisString.From("FOO")
+        );
+
+        // We're testing enumeration here, of course, there
+        // is simply data.Values.Size()
+        var count = 0;
+        foreach (var _ in data)
+        {
+            count++;    
+        }
+        Equal(2, count);
+    }
+
+
+    [Fact]
     public void ToRedisMessage_NestedArray_ReturnsCorrectResult()
     {
         var data = RedisArray.From(
@@ -71,7 +99,7 @@ public class RedisTypeSerializationTest
             serialized);
     }
 
-    private byte[] ToByteArray(string s)
+    private static byte[] ToByteArray(string s)
     {
         return Encoding.ASCII.GetBytes(s.Replace("\n", "\r\n") + "\r\n");
     }

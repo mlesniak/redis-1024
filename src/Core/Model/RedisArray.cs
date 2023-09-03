@@ -1,9 +1,9 @@
+using System.Collections;
 using System.Text;
 
 namespace Lesniak.Redis.Core.Model;
 
-// TODO(mlesniak) IEnumerable
-public class RedisArray : RedisType
+public class RedisArray : RedisType, IEnumerable
 {
     public const char Identifier = '*';
 
@@ -49,5 +49,10 @@ public class RedisArray : RedisType
     public RedisType this[int index]
     {
         get { return Values[index]; }
+    }
+
+    public IEnumerator GetEnumerator()
+    {
+        return Values.GetEnumerator();
     }
 }
