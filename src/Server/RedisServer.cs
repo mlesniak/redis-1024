@@ -59,10 +59,10 @@ public class RedisServer
     // a command is a special redisdata of type array with helper functions
     // for the arguments. defined in server.
 
-    private RedisType? ReadCommandline(NetworkStream networkStream)
+    private RedisArray? ReadCommandline(NetworkStream networkStream)
     {
         var input = Read(networkStream);
-        return input == null ? null : RedisType.Deserialize(input);
+        return input == null ? null : RedisType.Deserialize<RedisArray>(input);
     }
 
     private byte[]? Read(NetworkStream networkStream)

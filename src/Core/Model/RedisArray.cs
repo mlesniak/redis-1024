@@ -5,6 +5,8 @@ namespace Lesniak.Redis.Core.Model;
 // TODO(mlesniak) Index and IEnumerable
 public class RedisArray : RedisType
 {
+    public const char Identifier = '*';
+
     public List<RedisType> Values { get; set; }
 
     public RedisType this[int index]

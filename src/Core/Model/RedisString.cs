@@ -4,6 +4,8 @@ namespace Lesniak.Redis.Core.Model;
 
 public class RedisString : RedisType
 {
+    public const char Identifier = '$';
+    
     public string? Value { get; set; }
 
     private RedisString(string? value)
