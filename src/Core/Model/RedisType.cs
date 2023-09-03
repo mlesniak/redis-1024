@@ -10,6 +10,8 @@ public abstract class RedisType
     // TODO(mlesniak) or call correct method directly if you know the format?
     public static RedisType Deserialize(byte[] data) => Deserialize(data, 0).Item1;
 
+    public static T Deserialize<T>(byte[] data) where T : RedisType => (T)Deserialize(data, 0).Item1;
+
     private static Deserializer GetDeserializer(byte identifier)
     {
         return (char)identifier switch
@@ -29,6 +31,6 @@ public abstract class RedisType
     // For the time being, we use the serialized representation to present
     // a readable form of this type.
     public override string ToString() => Encoding.ASCII.GetString(Serialize());
-    
+
     public abstract byte[] Serialize();
 }

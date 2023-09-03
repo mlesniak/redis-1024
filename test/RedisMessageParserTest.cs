@@ -26,10 +26,8 @@ public class RedisMessageParserTest
                       HELLO
                       """.ToRedisMessage();
         
-        var data = RedisType.Deserialize(message);
-
-        IsType<RedisString>(data);
-        Equal("HELLO", ((RedisString)data).Value);
+        var data = RedisType.Deserialize<RedisString>(message);
+        Equal("HELLO", data.Value);
     }
 
     [Fact]
@@ -43,10 +41,8 @@ public class RedisMessageParserTest
                       FOO
                       """.ToRedisMessage();
         
-        var data = RedisType.Deserialize(message);
+        var array = RedisType.Deserialize<RedisArray>(message);
         
-        IsType<RedisArray>(data);
-        RedisArray array = (RedisArray)data;
         IsType<RedisString>(array[0]);
         Equal("HELLO", ((RedisString)array[0]).Value);
         IsType<RedisString>(array[1]);
@@ -67,10 +63,7 @@ public class RedisMessageParserTest
                       FOO
                       """.ToRedisMessage();
         
-        var data = RedisType.Deserialize(message);
-        
-        IsType<RedisArray>(data);
-        RedisArray array = (RedisArray)data;
+        var array = RedisType.Deserialize<RedisArray>(message);
         
         IsType<RedisArray>(array[0]);
         RedisArray subarray = (RedisArray)array[0];
