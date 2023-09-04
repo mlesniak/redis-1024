@@ -26,4 +26,5 @@
       <ProjectReference Include="../src/Lesniak.Redis.csproj" />
     </ItemGroup>
 
+
 </Project>

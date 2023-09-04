@@ -55,15 +55,15 @@ class MemoryValue
 // TODO(mlesniak) plain persistence
 // TODO(mlesniak) Cleanup job for expired values.
 // TODO(mlesniak) ADd tests
-public class Memory
+public class Database
 {
-    private static readonly ILogger _logger = Logging.For<Memory>();
+    private static readonly ILogger _logger = Logging.For<Database>();
 
     private readonly IDateTimeProvider _dateTimeProvider;
 
     private readonly ConcurrentDictionary<string, MemoryValue> _memory = new();
 
-    public Memory(IDateTimeProvider dateTimeProvider)
+    public Database(IDateTimeProvider dateTimeProvider)
     {
         _dateTimeProvider = dateTimeProvider;
     }

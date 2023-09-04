@@ -7,11 +7,11 @@ namespace Lesniak.Redis.Core;
 
 public class CommandHandler
 {
-    private readonly Memory _memory;
+    private readonly Database _database;
 
-    public CommandHandler(Memory memory)
+    public CommandHandler(Database database)
     {
-        _memory = memory;
+        _database = database;
     }
     
     public byte[] Execute(RedisArray commandline)
@@ -38,11 +38,11 @@ public class CommandHandler
                     };
                 }
                 
-                _memory.Set(setKey, value, expirationInMs);
+                _database.Set(setKey, value, expirationInMs);
                 return "+OK\r\n"u8.ToArray();
             case "get":
                 var getKey = ((RedisString)array[1]).Value!;
-                var resultBytes = _memory.Get(getKey);
+                var resultBytes = _database.Get(getKey);
                 if (resultBytes == null)
                 {
                     return RedisString.Nil().Serialize();

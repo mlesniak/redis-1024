@@ -10,15 +10,15 @@ namespace Lesniak.Redis.Test;
 
 public class CommandHandlerTest
 {
-    private readonly Memory _memory;
+    private readonly Database _database;
     private readonly CommandHandler _sut;
 
     // Will be recreated every time we instantiate
     // a new test.
     public CommandHandlerTest()
     {
-        _memory = new Memory(new DefaultDateTimeProvider());
-        _sut = new(_memory);
+        _database = new Database(new DefaultDateTimeProvider());
+        _sut = new(_database);
     }
 
     [Fact]
@@ -35,13 +35,13 @@ public class CommandHandlerTest
         var result = _sut.Execute(ToCommandLine("set name value"));
 
         Equal("+OK\r\n", Encoding.ASCII.GetString(result));
-        Equal("value"u8.ToArray(), _memory.Get("name"));
+        Equal("value"u8.ToArray(), _database.Get("name"));
     }
     
     [Fact]
     public void Execute_GetCommand_Succeeds()
     {
-        _memory.Set("name", "value"u8.ToArray(), null);
+        _database.Set("name", "value"u8.ToArray(), null);
 
         var result = _sut.Execute(ToCommandLine("get name"));
 
