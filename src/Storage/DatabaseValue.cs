@@ -1,6 +1,6 @@
 namespace Lesniak.Redis.Storage;
 
-class MemoryValue
+class DatabaseValue
 {
     readonly IDateTimeProvider _dateTimeProvider;
 
@@ -11,7 +11,7 @@ class MemoryValue
         get => _expiration != null && _dateTimeProvider.Now > _expiration;
     }
 
-    private byte[]? _value;
+    private readonly byte[]? _value;
 
     public byte[]? Value
     {
@@ -24,10 +24,10 @@ class MemoryValue
 
             return null;
         }
-        set { _value = value; }
+        init { _value = value; }
     }
 
-    public MemoryValue(IDateTimeProvider dateTimeProvider, byte[]? value, int? expiration = null)
+    public DatabaseValue(IDateTimeProvider dateTimeProvider, byte[]? value, int? expiration = null)
     {
         _dateTimeProvider = dateTimeProvider;
         Value = value;

@@ -47,4 +47,16 @@ public class DatabaseTest
 
         Assert.Null(_sut.Get("key"));
     }
+
+    [Fact]
+    public void Cleanup_Called_RemovesExpiredItems()
+    {
+        _sut.Set("key-not-removed", _dummy, null);
+        _sut.Set("key", _dummy, 1_000);
+        _dateTimeProvider.AddMilliseconds(5000);
+
+        _sut.RemoveExpiredKeys();
+
+        Assert.Equal(1, _sut.Count);
+    }
 }
