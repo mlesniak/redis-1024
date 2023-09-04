@@ -16,18 +16,32 @@ public class CommandHandler
     
     public byte[] Execute(RedisArray commandline)
     {
-        List<RedisType> arrayValues = commandline.Values!;
-        var command = ((RedisString)arrayValues[0]).Value!;
+        List<RedisType> array = commandline.Values!;
+        var command = ((RedisString)array[0]).Value!;
         switch (command)
         {
-            // TODO(mlesniak) expiration time
             case "set":
-                var setKey = ((RedisString)arrayValues[1]).Value!;
-                byte[] value = Encoding.ASCII.GetBytes(((RedisString)arrayValues[2]).Value!);
-                _memory.Set(setKey, value);
+                var setKey = ((RedisString)array[1]).Value!;
+                byte[] value = Encoding.ASCII.GetBytes(((RedisString)array[2]).Value!);
+
+                int? expirationInMs = null;
+                if (array.Count > 3)
+                {
+                    var type = ((RedisString)array[3]).Value!;
+                    var num = Int32.Parse(((RedisString)array[4]).Value!);
+
+                    expirationInMs = type.ToLower() switch
+                    {
+                        "ex" => num * 1_000,
+                        "px" => num,
+                        _ => throw new ArgumentOutOfRangeException()
+                    };
+                }
+                
+                _memory.Set(setKey, value, expirationInMs);
                 return "+OK\r\n"u8.ToArray();
             case "get":
-                var getKey = ((RedisString)arrayValues[1]).Value!;
+                var getKey = ((RedisString)array[1]).Value!;
                 var resultBytes = _memory.Get(getKey);
                 if (resultBytes == null)
                 {
