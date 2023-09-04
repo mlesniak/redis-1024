@@ -6,6 +6,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Lesniak.Redis.Storage;
 
+// TODO(mlesniak) Add basic persistence.
 public class Database
 {
     private static readonly ILogger _logger = Logging.For<Database>();
@@ -14,20 +15,23 @@ public class Database
 
     private readonly ConcurrentDictionary<string, DatabaseValue> _memory = new();
 
-    public Database(IDateTimeProvider dateTimeProvider)
+    public Database(IDateTimeProvider dateTimeProvider, bool startBackgroundJobs = true)
     {
         _dateTimeProvider = dateTimeProvider;
-        // TODO(mlesniak) Do not start this in test scenarios?
-        Task.Run(StartBackgroundCleanup);
+        if (startBackgroundJobs)
+        {
+            _logger.LogInformation("Spawning background cleaning job");
+            Task.Run(StartBackgroundCleanup);
+        }
     }
-    
+
     /// <summary>
     /// Returns number of stored items.
     ///
     /// Note that we return even expired items, which have
     /// not been cleaned up yet.
     /// </summary>
-    /// <returns>Number of keys in our memory structure</returns>
+    /// <returns>Number of keys in the memory structure</returns>
     public int Count
     {
         get => _memory.Count;

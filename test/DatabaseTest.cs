@@ -12,7 +12,7 @@ public class DatabaseTest
     public DatabaseTest()
     {
         _dateTimeProvider = new TestDateTimeProvider();
-        _sut = new Database(_dateTimeProvider);
+        _sut = new Database(_dateTimeProvider, startBackgroundJobs: false);
     }
 
     [Fact]
