@@ -10,13 +10,11 @@ namespace Lesniak.Redis.Test;
 public class DatabaseTest
 {
     private readonly byte[] _dummy = "dummy"u8.ToArray();
-    private readonly ITestOutputHelper _output;
     private readonly TestDateTimeProvider _dateTimeProvider;
     private readonly Database _sut;
 
-    public DatabaseTest(ITestOutputHelper output)
+    public DatabaseTest()
     {
-        _output = output;
         _dateTimeProvider = new TestDateTimeProvider();
         _sut = new Database(_dateTimeProvider);
     }
