@@ -16,14 +16,19 @@ public class DefaultDateTimeProvider : IDateTimeProvider
     public DateTime Now
     {
         get => DateTime.Now;
-    } 
+    }
 }
 
 class MemoryValue
 {
     readonly IDateTimeProvider _dateTimeProvider;
-    
+
     readonly DateTime? _expiration = null;
+
+    public bool Expired
+    {
+        get => _expiration != null && _dateTimeProvider.Now > _expiration;
+    }
 
     private byte[]? _value;
 
@@ -53,8 +58,6 @@ class MemoryValue
 }
 
 // TODO(mlesniak) plain persistence
-// TODO(mlesniak) Cleanup job for expired values.
-// TODO(mlesniak) ADd tests
 public class Database
 {
     private static readonly ILogger _logger = Logging.For<Database>();
@@ -66,11 +69,35 @@ public class Database
     public Database(IDateTimeProvider dateTimeProvider)
     {
         _dateTimeProvider = dateTimeProvider;
+        Task.Run(StartBackgroundCleanup);
+    }
+
+    private async Task StartBackgroundCleanup()
+    {
+        while (true)
+        {
+            // Run once a minute.
+            await Task.Delay(1_000 * 5);
+
+            var removed = 0;
+            foreach (KeyValuePair<string,MemoryValue> pair in _memory)
+            {
+                if (!pair.Value.Expired)
+                {
+                    continue;
+                }
+
+                _memory.Remove(pair.Key, out _);
+                removed++;
+            }
+            
+            _logger.LogInformation("Cleaned up. Removed {Removed} entries", removed);
+        }
     }
 
     public void Set(string key, byte[] value, int? expMs)
     {
-        _logger.LogInformation($"Storing {key} with expiration {expMs}");
+        _logger.LogInformation("Storing {Key} with expiration {Expiration}", key, expMs);
         _memory[key] = new(_dateTimeProvider, value, expMs);
     }
 
