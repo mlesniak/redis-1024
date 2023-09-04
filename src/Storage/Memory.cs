@@ -2,6 +2,7 @@ using System.Collections.Concurrent;
 
 namespace Lesniak.Redis.Storage;
 
+// TODO(mlesniak) plain persistence
 public class Memory
 {
     // We will add expiration time later.

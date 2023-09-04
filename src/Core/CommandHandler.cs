@@ -20,6 +20,7 @@ public class CommandHandler
         var command = ((RedisString)arrayValues[0]).Value!;
         switch (command)
         {
+            // TODO(mlesniak) expiration time
             case "set":
                 var setKey = ((RedisString)arrayValues[1]).Value!;
                 byte[] value = Encoding.ASCII.GetBytes(((RedisString)arrayValues[2]).Value!);
