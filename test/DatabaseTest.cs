@@ -1,9 +1,5 @@
-using System.Text;
-
 using Lesniak.Redis.Storage;
 using Lesniak.Redis.Test.Utils;
-
-using Xunit.Abstractions;
 
 namespace Lesniak.Redis.Test;
 
