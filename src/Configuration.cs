@@ -5,6 +5,7 @@ namespace Lesniak.Redis;
 public class Configuration
 {
     public int MaxReadBuffer { get; set; } = 1024 * 1024;
+    public int Port { get; set; } = 6379;
 
     public static Configuration Load()
     {

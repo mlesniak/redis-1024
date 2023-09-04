@@ -3,20 +3,23 @@ using System.Net.Sockets;
 
 using Lesniak.Redis.Core;
 using Lesniak.Redis.Core.Model;
+using Lesniak.Redis.Utils;
+
+using Microsoft.Extensions.Logging;
 
 namespace Lesniak.Redis.Server;
 
-// TODO(mlesniak)  add unit tests for ReadCommandLine from a stream
-// TODO(mlesniak) Add proper logging
 public class RedisServer
 {
     private readonly TcpListener _server;
     private readonly CommandHandler _commandHandler;
     private readonly Configuration _configuration;
 
-    public RedisServer(Configuration configuration, CommandHandler commandHandler, int port = 6379)
+    private static readonly ILogger _logger = Logging.For<RedisServer>();
+
+    public RedisServer(Configuration configuration, CommandHandler commandHandler)
     {
-        _server = new TcpListener(IPAddress.Loopback, port);
+        _server = new TcpListener(IPAddress.Loopback, configuration.Port);
         _commandHandler = commandHandler;
         _configuration = configuration;
     }
@@ -24,57 +27,63 @@ public class RedisServer
     public void Run()
     {
         _server.Start();
-        Console.WriteLine("Server started, listening for clients.");
+        _logger.LogInformation($"Server started on {_configuration.Port}");
         Listen();
     }
 
     private void Listen()
     {
+        int clientId = 0;
+        
         while (true)
         {
-            Console.WriteLine("Waiting for connections...");
+            _logger.LogInformation("Waiting for connections");
             TcpClient client = _server.AcceptTcpClient();
 
-            // TODO(mlesniak) Support async / await - pattern.
-            new Thread(() =>
+            Task.Run(async () =>
             {
-                Console.WriteLine("Client connected");
+                var id = Interlocked.Increment(ref clientId);
+                
+                _logger.LogInformation($"Client {id} connected");
                 var stream = client.GetStream();
-                HandleClient(stream);
-                Console.WriteLine("Client disconnected.");
+                await HandleClient(stream);
+                _logger.LogInformation($"Client {id} disconnected");
                 stream.Close();
-            }).Start();
+            });
         }
     }
 
-    private void HandleClient(NetworkStream stream)
+    private async Task HandleClient(NetworkStream stream)
     {
-        while (ReadCommandline(stream) is { } commandline)
+        while (true)
         {
-            var responseBytes = _commandHandler.Execute((RedisArray)commandline);
+            var commandline = await ReadCommandline(stream);
+            if (commandline == null)
+            {
+                return;
+            }
+
+            var responseBytes = _commandHandler.Execute(commandline);
             stream.Write(responseBytes, 0, responseBytes.Length);
         }
     }
-    
-    // a command is a special redisdata of type array with helper functions
-    // for the arguments. defined in server.
 
-    private RedisArray? ReadCommandline(NetworkStream networkStream)
+    private async Task<RedisArray?> ReadCommandline(NetworkStream networkStream)
     {
-        var input = Read(networkStream);
+        var input = await ReadAsync(networkStream);
         return input == null ? null : RedisType.Deserialize<RedisArray>(input);
     }
 
-    private byte[]? Read(NetworkStream networkStream)
+    private async Task<byte[]?> ReadAsync(NetworkStream networkStream)
     {
-        int bufferSize = 1024;
+        const int bufferSize = 1024;
         int maxBuffer = _configuration.MaxReadBuffer;
 
         byte[] buffer = new byte[bufferSize];
         using MemoryStream memoryStream = new();
 
         int bytesRead;
-        while ((bytesRead = networkStream.Read(buffer, 0, buffer.Length)) > 0)
+        while ((bytesRead = await networkStream.ReadAsync(buffer, 0, buffer.Length)) > 0)
         {
             memoryStream.Write(buffer, 0, bytesRead);
             if (!networkStream.DataAvailable)
