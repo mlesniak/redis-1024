@@ -20,6 +20,7 @@ public class Database
         Task.Run(StartBackgroundCleanup);
     }
 
+    // TODO(mlesniak) Add tests...
     private async Task StartBackgroundCleanup()
     {
         while (true)
@@ -39,7 +40,7 @@ public class Database
                 removed++;
             }
 
-            _logger.LogInformation("Cleaned up. Removed {Removed} entries", removed);
+            _logger.LogDebug("Cleaned up. Removed {Removed} entries", removed);
         }
     }
 
