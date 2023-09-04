@@ -17,7 +17,7 @@ public class CommandHandlerTest
     // a new test.
     public CommandHandlerTest()
     {
-        _memory = new Memory();
+        _memory = new Memory(new DefaultDateTimeProvider());
         _sut = new(_memory);
     }
 
@@ -41,7 +41,7 @@ public class CommandHandlerTest
     [Fact]
     public void Execute_GetCommand_Succeeds()
     {
-        _memory.Set("name", "value"u8.ToArray());
+        _memory.Set("name", "value"u8.ToArray(), null);
 
         var result = _sut.Execute(ToCommandLine("get name"));
 
