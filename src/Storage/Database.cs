@@ -1,4 +1,5 @@
 using System.Collections.Concurrent;
+using System.Text.Json;
 
 using Lesniak.Redis.Utils;
 
@@ -15,13 +16,17 @@ public class Database
 
     private readonly ConcurrentDictionary<string, DatabaseValue> _memory = new();
 
+    private bool dirty = false;
+
     public Database(IDateTimeProvider dateTimeProvider, bool startBackgroundJobs = true)
     {
+        // TODO(mlesniak) read database file
+
         _dateTimeProvider = dateTimeProvider;
         if (startBackgroundJobs)
         {
-            _logger.LogInformation("Spawning background cleaning job");
-            Task.Run(StartBackgroundCleanup);
+            Task.Run(MemoryCleanupJob);
+            Task.Run(PersistenceJob);
         }
     }
 
@@ -37,8 +42,36 @@ public class Database
         get => _memory.Count;
     }
 
-    private async Task StartBackgroundCleanup()
+    private async Task PersistenceJob()
     {
+        _logger.LogInformation("Spawning persistence job");
+        while (true)
+        {
+            if (dirty)
+            {
+                PersistData();
+                dirty = false;
+            }
+
+            await Task.Delay(1_000);
+        }
+    }
+
+    // For now, we persist as a simple JSON file. Is it realistic
+    // to parse the original files given our lines of code limitations?
+    private void PersistData()
+    {
+        _logger.LogInformation("Persisting data");
+        string json = JsonSerializer.Serialize(_memory);
+        Console.WriteLine(json);
+        
+        // TODO(mlesniak) persist to file
+        // TODO(mlesniak) abstractions via interfaces or at least namespaces.
+    }
+
+    private async Task MemoryCleanupJob()
+    {
+        _logger.LogInformation("Spawning background cleaning job");
         while (true)
         {
             // Run once a minute.
@@ -69,6 +102,7 @@ public class Database
     {
         _logger.LogInformation("Storing {Key} with expiration {Expiration}", key, expMs);
         _memory[key] = new(_dateTimeProvider, value, expMs);
+        dirty = true;
     }
 
     public byte[]? Get(string key) => _memory.TryGetValue(key, out DatabaseValue? value) ? value.Value : null;

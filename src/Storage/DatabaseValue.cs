@@ -24,8 +24,13 @@ class DatabaseValue
 
             return null;
         }
-        init { _value = value; }
+        private init { _value = value; }
     }
+
+    public DateTime? Expiration
+    {
+        get => _expiration;
+    } 
 
     public DatabaseValue(IDateTimeProvider dateTimeProvider, byte[]? value, int? expiration = null)
     {

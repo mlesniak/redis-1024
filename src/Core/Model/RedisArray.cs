@@ -16,7 +16,6 @@ public class RedisArray : RedisType, IEnumerable
 
     public static RedisArray From(params RedisType[] elements) => new(elements);
 
-    // TODO(mlesniak) can we use something like ReadOnlySpan<byte> instead?
     public static new (RedisType, int) Deserialize(byte[] data, int offset)
     {
         RedisArray result = new();
