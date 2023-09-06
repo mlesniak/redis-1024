@@ -14,14 +14,14 @@ public class Database
 
     private readonly IDateTimeProvider _dateTimeProvider;
 
-    private readonly ConcurrentDictionary<string, DatabaseValue> _memory = new();
+    private ConcurrentDictionary<string, DatabaseValue> _memory = new();
 
-    private bool dirty = false;
+    private bool _dirty = false;
 
     public Database(IDateTimeProvider dateTimeProvider, bool startBackgroundJobs = true)
     {
-        // TODO(mlesniak) read database file
-
+        LoadData();
+        
         _dateTimeProvider = dateTimeProvider;
         if (startBackgroundJobs)
         {
@@ -47,12 +47,13 @@ public class Database
         _logger.LogInformation("Spawning persistence job");
         while (true)
         {
-            if (dirty)
+            if (_dirty)
             {
                 PersistData();
-                dirty = false;
+                _dirty = false;
             }
 
+            // TODO(mlesniak) Configurable
             await Task.Delay(1_000);
         }
     }
@@ -61,12 +62,24 @@ public class Database
     // to parse the original files given our lines of code limitations?
     private void PersistData()
     {
+        // TODO(mlesniak) abstractions via interfaces and/or namespaces.
         _logger.LogInformation("Persisting data");
-        string json = JsonSerializer.Serialize(_memory);
-        Console.WriteLine(json);
-        
-        // TODO(mlesniak) persist to file
-        // TODO(mlesniak) abstractions via interfaces or at least namespaces.
+        JsonSerializerOptions options = new();
+        options.Converters.Add(new DatabaseValueConverter());
+        string json = JsonSerializer.Serialize(_memory, options);
+        File.WriteAllText("output.json", json);
+    }
+
+    private void LoadData()
+    {
+        _logger.LogInformation("Loading stored data");
+        // var json = File.ReadAllText("output.json");
+        // var options = new JsonSerializerOptions();
+        // options.IncludeFields = true;
+        // _memory = JsonSerializer.Deserialize<ConcurrentDictionary<string, DatabaseValue>>(
+        //     json, 
+        //     options
+        // );
     }
 
     private async Task MemoryCleanupJob()
@@ -102,8 +115,10 @@ public class Database
     {
         _logger.LogInformation("Storing {Key} with expiration {Expiration}", key, expMs);
         _memory[key] = new(_dateTimeProvider, value, expMs);
-        dirty = true;
+        _dirty = true;
     }
 
     public byte[]? Get(string key) => _memory.TryGetValue(key, out DatabaseValue? value) ? value.Value : null;
+    
+    // TODO(mlesniak) Add DEL option?
 }
