@@ -20,9 +20,9 @@ public class Database
 
     public Database(IDateTimeProvider dateTimeProvider, bool startBackgroundJobs = true)
     {
+        _dateTimeProvider = dateTimeProvider;
         LoadData();
         
-        _dateTimeProvider = dateTimeProvider;
         if (startBackgroundJobs)
         {
             Task.Run(MemoryCleanupJob);
@@ -65,7 +65,7 @@ public class Database
         // TODO(mlesniak) abstractions via interfaces and/or namespaces.
         _logger.LogInformation("Persisting data");
         JsonSerializerOptions options = new();
-        options.Converters.Add(new DatabaseValueConverter());
+        options.Converters.Add(new DatabaseValueConverter(_dateTimeProvider));
         string json = JsonSerializer.Serialize(_memory, options);
         File.WriteAllText("output.json", json);
     }
@@ -73,13 +73,14 @@ public class Database
     private void LoadData()
     {
         _logger.LogInformation("Loading stored data");
-        // var json = File.ReadAllText("output.json");
-        // var options = new JsonSerializerOptions();
+        var json = File.ReadAllText("output.json");
+        var options = new JsonSerializerOptions();
+        options.Converters.Add(new DatabaseValueConverter(_dateTimeProvider));
         // options.IncludeFields = true;
-        // _memory = JsonSerializer.Deserialize<ConcurrentDictionary<string, DatabaseValue>>(
-        //     json, 
-        //     options
-        // );
+        _memory = JsonSerializer.Deserialize<ConcurrentDictionary<string, DatabaseValue>>(
+            json, 
+            options
+        );
     }
 
     private async Task MemoryCleanupJob()
