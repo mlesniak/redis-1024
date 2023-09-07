@@ -1,4 +1,4 @@
-using Lesniak.Redis.Storage;
+using Lesniak.Redis.Core.Storage;
 using Lesniak.Redis.Test.Utils;
 
 namespace Lesniak.Redis.Test;
@@ -7,12 +7,12 @@ public class DatabaseTest
 {
     private readonly byte[] _dummy = "dummy"u8.ToArray();
     private readonly TestDateTimeProvider _dateTimeProvider;
-    private readonly Database _sut;
+    private readonly InMemory _sut;
 
     public DatabaseTest()
     {
         _dateTimeProvider = new TestDateTimeProvider();
-        _sut = new Database(_dateTimeProvider, startBackgroundJobs: false);
+        _sut = new InMemory(_dateTimeProvider, startBackgroundJobs: false);
     }
 
     [Fact]

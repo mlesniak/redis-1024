@@ -1,4 +1,4 @@
-namespace Lesniak.Redis.Storage;
+namespace Lesniak.Redis.Core.Storage;
 
 public interface IDateTimeProvider
 {

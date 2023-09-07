@@ -1,4 +1,4 @@
-using Lesniak.Redis.Storage;
+using Lesniak.Redis.Core.Storage;
 
 namespace Lesniak.Redis.Test.Utils;
 

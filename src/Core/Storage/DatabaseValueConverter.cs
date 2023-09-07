@@ -1,15 +1,15 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
-namespace Lesniak.Redis.Storage;
+namespace Lesniak.Redis.Core.Storage;
 
-class DatabaseValueConverter : JsonConverter<DatabaseValue>
+internal class DatabaseValueConverter : JsonConverter<DatabaseValue>
 {
     public override DatabaseValue? Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
     {
         using JsonDocument doc = JsonDocument.ParseValue(ref reader);
-        var root = doc.RootElement;
-        var value = root.GetProperty("value").GetBytesFromBase64();
+        JsonElement root = doc.RootElement;
+        byte[] value = root.GetProperty("value").GetBytesFromBase64();
         DateTime? expiration =
             root.TryGetProperty("expiration", out JsonElement expElement)
                 ? expElement.GetDateTime()
@@ -25,6 +25,7 @@ class DatabaseValueConverter : JsonConverter<DatabaseValue>
         {
             writer.WriteString("expiration", value.Expiration?.ToString("O"));
         }
+
         writer.WriteEndObject();
     }
 }

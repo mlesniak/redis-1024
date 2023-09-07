@@ -5,24 +5,23 @@ using Lesniak.Redis.Utils;
 
 using Microsoft.Extensions.Logging;
 
-namespace Lesniak.Redis.Storage;
+namespace Lesniak.Redis.Core.Storage;
 
-// TODO(mlesniak) Add basic persistence.
-public class Database
+public class InMemory
 {
-    private static readonly ILogger _logger = Logging.For<Database>();
+    private static readonly ILogger _logger = Logging.For<InMemory>();
 
     private readonly IDateTimeProvider _dateTimeProvider;
 
+    private bool _dirty;
+
     private ConcurrentDictionary<string, DatabaseValue> _memory = new();
 
-    private bool _dirty = false;
-
-    public Database(IDateTimeProvider dateTimeProvider, bool startBackgroundJobs = true)
+    public InMemory(IDateTimeProvider dateTimeProvider, bool startBackgroundJobs = true)
     {
         _dateTimeProvider = dateTimeProvider;
         LoadData();
-        
+
         if (startBackgroundJobs)
         {
             Task.Run(MemoryCleanupJob);
@@ -31,16 +30,12 @@ public class Database
     }
 
     /// <summary>
-    /// Returns number of stored items.
-    ///
-    /// Note that we return even expired items, which have
-    /// not been cleaned up yet.
+    ///     Returns number of stored items.
+    ///     Note that we return even expired items, which have
+    ///     not been cleaned up yet.
     /// </summary>
     /// <returns>Number of keys in the memory structure</returns>
-    public int Count
-    {
-        get => _memory.Count;
-    }
+    public int Count => _memory.Count;
 
     private async Task PersistenceJob()
     {
@@ -74,12 +69,12 @@ public class Database
     private void LoadData()
     {
         _logger.LogInformation("Loading stored data");
-        var json = File.ReadAllText("output.json");
-        var options = new JsonSerializerOptions();
+        string json = File.ReadAllText("output.json");
+        JsonSerializerOptions options = new JsonSerializerOptions();
         options.Converters.Add(new DatabaseValueConverter());
         // options.IncludeFields = true;
         _memory = JsonSerializer.Deserialize<ConcurrentDictionary<string, DatabaseValue>>(
-            json, 
+            json,
             options
         ) ?? throw new InvalidDataException();
         _logger.LogInformation($"Loaded {_memory.Count} entries");
@@ -99,7 +94,7 @@ public class Database
 
     public int RemoveExpiredKeys()
     {
-        var removed = 0;
+        int removed = 0;
         foreach (KeyValuePair<string, DatabaseValue> pair in _memory)
         {
             if (!KeyExpired(pair.Value))
@@ -127,11 +122,15 @@ public class Database
         if (expirationMs != null)
         {
             expirationDate = DateTime.Now.AddMilliseconds((double)expirationMs);
-        }  
-        _memory[key] = new(value, expirationDate);
+        }
+
+        _memory[key] = new DatabaseValue(value, expirationDate);
     }
 
-    public byte[]? Get(string key) => _memory.TryGetValue(key, out DatabaseValue? value) ? value.Value : null;
-    
+    public byte[]? Get(string key)
+    {
+        return _memory.TryGetValue(key, out DatabaseValue? value) ? value.Value : null;
+    }
+
     // TODO(mlesniak) Add DEL method and command?
 }

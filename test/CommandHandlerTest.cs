@@ -2,7 +2,7 @@ using System.Text;
 
 using Lesniak.Redis.Core;
 using Lesniak.Redis.Core.Model;
-using Lesniak.Redis.Storage;
+using Lesniak.Redis.Core.Storage;
 
 using static Xunit.Assert;
 
@@ -10,15 +10,15 @@ namespace Lesniak.Redis.Test;
 
 public class CommandHandlerTest
 {
-    private readonly Database _database;
+    private readonly InMemory _inMemory;
     private readonly CommandHandler _sut;
 
     // Will be recreated every time we instantiate
     // a new test.
     public CommandHandlerTest()
     {
-        _database = new Database(new DefaultDateTimeProvider());
-        _sut = new(_database);
+        _inMemory = new InMemory(new DefaultDateTimeProvider());
+        _sut = new(_inMemory);
     }
 
     [Fact]
@@ -35,13 +35,13 @@ public class CommandHandlerTest
         var result = _sut.Execute(ToCommandLine("set name value"));
 
         Equal("+OK\r\n", Encoding.ASCII.GetString(result));
-        Equal("value"u8.ToArray(), _database.Get("name"));
+        Equal("value"u8.ToArray(), _inMemory.Get("name"));
     }
     
     [Fact]
     public void Execute_GetCommand_Succeeds()
     {
-        _database.Set("name", "value"u8.ToArray(), null);
+        _inMemory.Set("name", "value"u8.ToArray(), null);
 
         var result = _sut.Execute(ToCommandLine("get name"));
 

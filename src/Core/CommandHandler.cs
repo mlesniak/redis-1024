@@ -1,17 +1,17 @@
 using System.Text;
 
 using Lesniak.Redis.Core.Model;
-using Lesniak.Redis.Storage;
+using Lesniak.Redis.Core.Storage;
 
 namespace Lesniak.Redis.Core;
 
 public class CommandHandler
 {
-    private readonly Database _database;
+    private readonly InMemory _inMemory;
 
-    public CommandHandler(Database database)
+    public CommandHandler(InMemory inMemory)
     {
-        _database = database;
+        _inMemory = inMemory;
     }
     
     public byte[] Execute(RedisArray commandline)
@@ -38,11 +38,11 @@ public class CommandHandler
                     };
                 }
                 
-                _database.Set(setKey, value, expirationInMs);
+                _inMemory.Set(setKey, value, expirationInMs);
                 return "+OK\r\n"u8.ToArray();
             case "get":
                 var getKey = ((RedisString)array[1]).Value!;
-                var resultBytes = _database.Get(getKey);
+                var resultBytes = _inMemory.Get(getKey);
                 if (resultBytes == null)
                 {
                     return RedisString.Nil().Serialize();

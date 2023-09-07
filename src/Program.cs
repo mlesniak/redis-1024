@@ -1,10 +1,10 @@
 ﻿using Lesniak.Redis;
 using Lesniak.Redis.Core;
+using Lesniak.Redis.Core.Storage;
 using Lesniak.Redis.Server;
-using Lesniak.Redis.Storage;
 
 var configuration = Configuration.Load();
-var storage = new Database(new DefaultDateTimeProvider());
+var storage = new InMemory(new DefaultDateTimeProvider());
 var commandHandler = new CommandHandler(storage);
 var networkServer = new RedisServer(configuration, commandHandler);
 
