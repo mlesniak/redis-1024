@@ -18,14 +18,15 @@ class DatabaseValueConverter : JsonConverter<DatabaseValue>
 
         var root = doc.RootElement;
         var value = root.GetProperty("value").GetBytesFromBase64();
-        // TODO(mlesniak) null handling
-        var expiration = root.GetProperty("expiration").GetDateTime();
-        int? ms = null;
-        if (expiration != null)
-        {
-            ms = (int)(expiration - _dateTimeProvider.Now).TotalMilliseconds;
-        }
 
+        int? ms = null;
+        if (root.TryGetProperty("expiration", out JsonElement expElement))
+        {
+            var expiration = expElement.GetDateTime();
+            ms = (int)(expiration - _dateTimeProvider.Now).TotalMilliseconds;
+            
+        }
+        
         // TODO(mlesniak) Should the databaseValue really decide if it's expired or is
         //                this a property of the database logic? The latter makes more sense.
         return new DatabaseValue(_dateTimeProvider, value, ms);

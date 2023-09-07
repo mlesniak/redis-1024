@@ -63,6 +63,7 @@ public class Database
     private void PersistData()
     {
         // TODO(mlesniak) abstractions via interfaces and/or namespaces.
+        // TODO(mlesniak) We're breaking Sepeation of Concerns here.
         _logger.LogInformation("Persisting data");
         JsonSerializerOptions options = new();
         options.Converters.Add(new DatabaseValueConverter(_dateTimeProvider));
@@ -80,7 +81,8 @@ public class Database
         _memory = JsonSerializer.Deserialize<ConcurrentDictionary<string, DatabaseValue>>(
             json, 
             options
-        );
+        ) ?? throw new InvalidDataException();
+        _logger.LogInformation($"Loaded {_memory.Count} entries");
     }
 
     private async Task MemoryCleanupJob()
