@@ -53,7 +53,7 @@ public class Database
                 _dirty = false;
             }
 
-            // TODO(mlesniak) Configurable
+            // TODO(mlesniak) Make this configurable
             await Task.Delay(1_000);
         }
     }
@@ -66,7 +66,7 @@ public class Database
         // TODO(mlesniak) We're breaking Sepeation of Concerns here.
         _logger.LogInformation("Persisting data");
         JsonSerializerOptions options = new();
-        options.Converters.Add(new DatabaseValueConverter(_dateTimeProvider));
+        options.Converters.Add(new DatabaseValueConverter());
         string json = JsonSerializer.Serialize(_memory, options);
         File.WriteAllText("output.json", json);
     }
@@ -76,7 +76,7 @@ public class Database
         _logger.LogInformation("Loading stored data");
         var json = File.ReadAllText("output.json");
         var options = new JsonSerializerOptions();
-        options.Converters.Add(new DatabaseValueConverter(_dateTimeProvider));
+        options.Converters.Add(new DatabaseValueConverter());
         // options.IncludeFields = true;
         _memory = JsonSerializer.Deserialize<ConcurrentDictionary<string, DatabaseValue>>(
             json, 
@@ -102,7 +102,7 @@ public class Database
         var removed = 0;
         foreach (KeyValuePair<string, DatabaseValue> pair in _memory)
         {
-            if (!pair.Value.Expired)
+            if (!KeyExpired(pair.Value))
             {
                 continue;
             }
@@ -114,14 +114,24 @@ public class Database
         return removed;
     }
 
-    public void Set(string key, byte[] value, int? expMs)
+    private bool KeyExpired(DatabaseValue value)
     {
-        _logger.LogInformation("Storing {Key} with expiration {Expiration}", key, expMs);
-        _memory[key] = new(_dateTimeProvider, value, expMs);
+        return value.Expiration != null && _dateTimeProvider.Now < value.Expiration;
+    }
+
+    public void Set(string key, byte[] value, int? expirationMs)
+    {
+        _logger.LogInformation("Storing {Key} with expiration {Expiration}", key, expirationMs);
         _dirty = true;
+        DateTime? expirationDate = null;
+        if (expirationMs != null)
+        {
+            expirationDate = DateTime.Now.AddMilliseconds((double)expirationMs);
+        }  
+        _memory[key] = new(value, expirationDate);
     }
 
     public byte[]? Get(string key) => _memory.TryGetValue(key, out DatabaseValue? value) ? value.Value : null;
     
-    // TODO(mlesniak) Add DEL option?
+    // TODO(mlesniak) Add DEL method and command?
 }
