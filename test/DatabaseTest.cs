@@ -9,11 +9,12 @@ public class DatabaseTest
     private readonly TestDateTimeProvider _dateTimeProvider;
     private readonly InMemoryStorage _sut;
 
-    public DatabaseTest()
-    {
-        _dateTimeProvider = new TestDateTimeProvider();
-        _sut = new InMemoryStorage(_dateTimeProvider);
-    }
+    // TODO(mlesniak) Fix this.
+    // public DatabaseTest()
+    // {
+    //     _dateTimeProvider = new TestDateTimeProvider();
+    //     _sut = new InMemoryStorage(_dateTimeProvider);
+    // }
 
     [Fact]
     public void Set_WithoutExpiration_NeverExpires()

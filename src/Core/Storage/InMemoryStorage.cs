@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Concurrent;
 using System.Text.Json;
 
+using Lesniak.Redis.Core.Storage.Jobs;
 using Lesniak.Redis.Utils;
 
 using Microsoft.Extensions.Logging;
@@ -9,7 +10,7 @@ using Microsoft.Extensions.Logging;
 namespace Lesniak.Redis.Core.Storage;
 
 // TODO(mlesniak) Add DEL method and command?
-public class InMemoryStorage : IDatabase
+public class InMemoryStorage : IDatabase, IStorage
 {
     private static readonly ILogger _logger = Logging.For<InMemoryStorage>();
 
@@ -18,13 +19,27 @@ public class InMemoryStorage : IDatabase
     private bool _dirty;
 
     private ConcurrentDictionary<string, DatabaseValue> _memory = new();
+    private readonly Configuration _configuration;
 
-    public InMemoryStorage(IDateTimeProvider dateTimeProvider)
+    public InMemoryStorage(Configuration configuration, IDateTimeProvider dateTimeProvider)
     {
         _dateTimeProvider = dateTimeProvider;
+        _configuration = configuration;
         LoadData();
+        
+        // TODO(mlesniak) later manually
+        StartJobs();
+    }
+    
+    public event IDatabase.DataChangedHandler DataChanged;
 
-        Task.Run(PersistenceJob);
+    // No need for any explicit configuration.
+    public void StartJobs()
+    {
+        // Task.Run(PersistenceJob);
+        PersistenceJob persistenceJob = new PersistenceJob(this);
+        DataChanged += persistenceJob.DataChangedHandler;
+        persistenceJob.Run(_configuration);
     }
 
     /// <summary>
@@ -35,24 +50,22 @@ public class InMemoryStorage : IDatabase
     /// <returns>Number of keys in the memory structure</returns>
     public int Count => _memory.Count;
 
-    private async Task PersistenceJob()
-    {
-        _logger.LogInformation("Spawning persistence job");
-        while (true)
-        {
-            if (_dirty)
-            {
-                PersistData();
-                _dirty = false;
-            }
+    // private async Task PersistenceJob()
+    // {
+    //     _logger.LogInformation("Spawning persistence job");
+    //     while (true)
+    //     {
+    //         if (_dirty)
+    //         {
+    //             PersistData();
+    //             _dirty = false;
+    //         }
+    //
+    //         // TODO(mlesniak) Make this configurable
+    //         await Task.Delay(1_000);
+    //     }
+    // }
 
-            // TODO(mlesniak) Make this configurable
-            await Task.Delay(1_000);
-        }
-    }
-
-    // For now, we persist as a simple JSON file. Is it realistic
-    // to parse the original files given our lines of code limitations?
     private void PersistData()
     {
         // TODO(mlesniak) abstractions via interfaces and/or namespaces.
@@ -81,7 +94,6 @@ public class InMemoryStorage : IDatabase
     public void Set(string key, byte[] value, int? expirationMs)
     {
         _logger.LogInformation("Storing {Key} with expiration {Expiration}", key, expirationMs);
-        _dirty = true;
         DateTime? expirationDate = null;
         if (expirationMs != null)
         {
@@ -89,6 +101,7 @@ public class InMemoryStorage : IDatabase
         }
 
         _memory[key] = new DatabaseValue(value, expirationDate);
+        DataChanged.Invoke();
     }
 
     public byte[]? Get(string key)
@@ -102,4 +115,13 @@ public class InMemoryStorage : IDatabase
     }
 
     public IEnumerator GetEnumerator() => _memory.GetEnumerator();
+    public void Load(Configuration configuration, IDatabase database)
+    {
+        throw new NotImplementedException();
+    }
+
+    public void Save(Configuration configuration, IDatabase database)
+    {
+        throw new NotImplementedException();
+    }
 }

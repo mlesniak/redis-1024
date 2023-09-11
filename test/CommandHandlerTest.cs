@@ -13,13 +13,14 @@ public class CommandHandlerTest
     private readonly InMemoryStorage _inMemoryStorage;
     private readonly CommandHandler _sut;
 
-    // Will be recreated every time we instantiate
-    // a new test.
-    public CommandHandlerTest()
-    {
-        _inMemoryStorage = new InMemoryStorage(new DefaultDateTimeProvider());
-        _sut = new(_inMemoryStorage);
-    }
+    // TODO(mlesniak) Fix this.
+    // // Will be recreated every time we instantiate
+    // // a new test.
+    // public CommandHandlerTest()
+    // {
+    //     _inMemoryStorage = new InMemoryStorage(new DefaultDateTimeProvider());
+    //     _sut = new(_inMemoryStorage);
+    // }
 
     [Fact]
     public void Execute_InvalidCommand_ReturnsError()

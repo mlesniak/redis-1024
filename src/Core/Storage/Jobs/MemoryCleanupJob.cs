@@ -4,26 +4,29 @@ using Microsoft.Extensions.Logging;
 
 namespace Lesniak.Redis.Core.Storage.Jobs;
 
-public class MemoryCleanupJob
+public class MemoryCleanupJob : IDatabaseJob
 {
     private static readonly ILogger _logger = Logging.For<MemoryCleanupJob>();
-    private IDatabase _database;
-    private IDateTimeProvider _dateTimeProvider;
+    private readonly IDatabase _database;
+    private readonly IDateTimeProvider _dateTimeProvider;
 
-    public void Run(
-        Configuration configuration,
-        IDateTimeProvider dateTimeProvider,
-        IDatabase database)
+
+
+    public MemoryCleanupJob(IDatabase database, IDateTimeProvider dateTimeProvider)
     {
         _database = database;
         _dateTimeProvider = dateTimeProvider;
+    }
+
+    public void Run(Configuration configuration)
+    {
         // TODO(mlesniak) check configuration if job is enabled.
         Task.Run(Run);
     }
 
     async Task Run()
     {
-        _logger.LogInformation("Spawning background cleanup job");
+        _logger.LogInformation("Spawning cleanup job");
         while (true)
         {
             // Run once a minute.

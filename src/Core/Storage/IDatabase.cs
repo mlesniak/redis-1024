@@ -4,6 +4,8 @@ namespace Lesniak.Redis.Core.Storage;
 
 public interface IDatabase : IEnumerable
 {
+    public delegate void DataChangedHandler();
+
     /// <summary>
     ///     Returns number of stored items.
     ///     Note that we return even expired items, which have
@@ -13,8 +15,8 @@ public interface IDatabase : IEnumerable
     int Count { get; }
 
     void Set(string key, byte[] value, int? expirationMs);
-    
+
     byte[]? Get(string key);
-    
+
     void Remove(string key);
 }

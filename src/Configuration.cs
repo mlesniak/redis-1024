@@ -3,6 +3,7 @@ using Microsoft.Extensions.Configuration;
 namespace Lesniak.Redis;
 
 // TODO(mlesniak) Allow override for tests?
+// TODO(mlesniak) Could we make this static somehow?
 public class Configuration
 {
     public int MaxReadBuffer { get; set; } = 1024 * 1024;
