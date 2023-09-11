@@ -11,4 +11,10 @@ internal class DatabaseValue
     public byte[]? Value { get; }
 
     public DateTime? Expiration { get; }
+
+    public bool Expired(DateTime now)
+    {
+        if (Expiration < now) return true;
+        return false;
+    }
 }
