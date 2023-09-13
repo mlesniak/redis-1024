@@ -8,7 +8,7 @@ namespace Lesniak.Redis.Core;
 
 public class Database
 {
-    private static ILogger logger = Logging.For<Database>();
+    private static ILogger log = Logging.For<Database>();
 
     private ConcurrentDictionary<string, DatabaseValue> _storage = new();
 
@@ -26,7 +26,7 @@ public class Database
 
     public void Set(string key, byte[] value, long? expiration = null)
     {
-        logger.LogDebug("Setting {Key}", key);
+        log.LogDebug("Setting {Key}", key);
         DateTime? expirationDate = expiration.HasValue
             ? DateTime.UtcNow.AddMilliseconds((double)expiration)
             : null;
@@ -36,13 +36,13 @@ public class Database
 
     public byte[]? Get(string key)
     {
-        logger.LogDebug("Retrieving {Key}", key);
+        log.LogDebug("Retrieving {Key}", key);
         return _storage.TryGetValue(key, out DatabaseValue? dbValue) ? dbValue.Value : null;
     }
 
     public void Remove(string key)
     {
-        logger.LogDebug("Removing {Key}", key);
+        log.LogDebug("Removing {Key}", key);
         _storage.Remove(key, out DatabaseValue? _);
     }
 }

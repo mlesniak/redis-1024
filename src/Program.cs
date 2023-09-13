@@ -19,5 +19,5 @@ database.Remove("michael");
 bytes = database.Get("michael");
 if (bytes == null)
 {
-    Console.WriteLine("null");
+    log.LogInformation("null");
 }
