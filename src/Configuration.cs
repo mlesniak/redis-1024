@@ -20,4 +20,9 @@ public class Configuration
     }
 
     public static Configuration Get() => _singleton;
+
+    public override string ToString()
+    {
+        return $"{nameof(MaxReadBuffer)}: {MaxReadBuffer}, {nameof(Port)}: {Port}";
+    }
 }
