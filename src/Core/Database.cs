@@ -11,6 +11,12 @@ public class Database
     private static readonly ILogger log = Logging.For<Database>();
 
     private readonly ConcurrentDictionary<string, DatabaseValue> _storage = new();
+    private readonly IDateTimeProvider _dateTimeProvider;
+
+    public Database(IDateTimeProvider dateTimeProvider)
+    {
+        _dateTimeProvider = dateTimeProvider;
+    }
 
     private class DatabaseValue
     {
@@ -36,6 +42,7 @@ public class Database
 
     public byte[]? Get(string key)
     {
+        // TODO(mlesniak) Check for expiration date
         log.LogDebug("Retrieving {Key}", key);
         return _storage.TryGetValue(key, out DatabaseValue? dbValue) ? dbValue.Value : null;
     }

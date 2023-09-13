@@ -10,7 +10,7 @@ var log = Logging.For<Program>();
 var configuration = Configuration.Get();
 log.LogInformation($"Configuration {configuration}");
 
-var database = new Database();
+var database = new Database(new DefaultDateTimeProvider());
 database.Set("michael", "foo"u8.ToArray());
 var bytes = database.Get("michael");
 var str = Encoding.ASCII.GetString(bytes);
