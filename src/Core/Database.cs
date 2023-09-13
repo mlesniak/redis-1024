@@ -1,6 +1,6 @@
 using System.Collections.Concurrent;
 
-using Lesniak.Redis.Utils;
+using Lesniak.Redis.Infrastructure;
 
 using Microsoft.Extensions.Logging;
 
@@ -8,9 +8,9 @@ namespace Lesniak.Redis.Core;
 
 public class Database
 {
-    private static ILogger log = Logging.For<Database>();
+    private static readonly ILogger log = Logging.For<Database>();
 
-    private ConcurrentDictionary<string, DatabaseValue> _storage = new();
+    private readonly ConcurrentDictionary<string, DatabaseValue> _storage = new();
 
     private class DatabaseValue
     {
