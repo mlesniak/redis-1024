@@ -42,9 +42,14 @@ public class Database
 
     public byte[]? Get(string key)
     {
-        // TODO(mlesniak) Check for expiration date
         log.LogDebug("Retrieving {Key}", key);
-        return _storage.TryGetValue(key, out DatabaseValue? dbValue) ? dbValue.Value : null;
+        _storage.TryGetValue(key, out DatabaseValue? dbValue);
+        if (dbValue == null || dbValue.ExpirationDate <= _dateTimeProvider.Now)
+        {
+            return null;
+        }
+
+        return dbValue.Value;
     }
 
     public void Remove(string key)
