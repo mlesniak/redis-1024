@@ -30,20 +30,20 @@ class Program
         }
     }
 
-    public static async Task Main()
-    {
-        var program = new Program();
-        program.AddServices();
-        program.SpawnJobs();
-        await program.Test();
-    }
-
-    private async Task Test()
+    async Task Test()
     {
         var database = _serviceProvider.GetRequiredService<Database>();
         database.Set("michael", "foo"u8.ToArray(), 100);
         await Task.Delay(100);
         var c = database.Count;
         log.LogInformation("Count = {Count}", c);
+    }
+
+    public static async Task Main()
+    {
+        var program = new Program();
+        program.AddServices();
+        program.SpawnJobs();
+        await program.Test();
     }
 }
