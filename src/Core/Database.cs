@@ -1,3 +1,4 @@
+using System.Collections;
 using System.Collections.Concurrent;
 
 using Lesniak.Redis.Infrastructure;
@@ -6,19 +7,20 @@ using Microsoft.Extensions.Logging;
 
 namespace Lesniak.Redis.Core;
 
-public class Database
+public class Database : IEnumerable<KeyValuePair<string, Database.DatabaseValue>>
 {
     private static readonly ILogger log = Logging.For<Database>();
 
     private readonly ConcurrentDictionary<string, DatabaseValue> _storage = new();
     private readonly IDateTimeProvider _dateTimeProvider;
+    private readonly object _writeLock = new();
 
     public Database(IDateTimeProvider dateTimeProvider)
     {
         _dateTimeProvider = dateTimeProvider;
     }
 
-    private class DatabaseValue
+    public class DatabaseValue
     {
         public byte[]? Value { get; }
         public DateTime? ExpirationDate { get; }
@@ -56,5 +58,27 @@ public class Database
     {
         log.LogDebug("Removing {Key}", key);
         _storage.Remove(key, out DatabaseValue? _);
+    }
+
+    // internal
+    public int Count
+    {
+        get => _storage.Count;
+    }
+
+    public void LockWrites(Action operation)
+    {
+        lock (_writeLock)
+        {
+            operation();
+        }
+    }
+
+    IEnumerator<KeyValuePair<string, DatabaseValue>> IEnumerable<KeyValuePair<string, DatabaseValue>>.GetEnumerator() =>
+        _storage.GetEnumerator();
+
+    public IEnumerator GetEnumerator()
+    {
+        return _storage.GetEnumerator();
     }
 }
