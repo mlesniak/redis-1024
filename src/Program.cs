@@ -1,4 +1,6 @@
-﻿using Lesniak.Redis.Core;
+﻿using System.Text;
+
+using Lesniak.Redis.Core;
 using Lesniak.Redis.Core.Jobs;
 using Lesniak.Redis.Infrastructure;
 
@@ -19,6 +21,7 @@ class Program
             .AddSingleton<Database>()
             .AddSingleton<IJob, CleanupJob>()
             .AddSingleton<IJob, PersistenceJob>()
+            .AddSingleton<IPersistenceProvider, JsonPersistence>()
             .BuildServiceProvider();
     }
 
@@ -30,11 +33,20 @@ class Program
         }
     }
 
+    private void RestoreDatabase()
+    {
+        var provider = _serviceProvider.GetRequiredService<IPersistenceProvider>();
+        provider.Load();
+    }
+
     async Task Test()
     {
         var database = _serviceProvider.GetRequiredService<Database>();
-        database.Set("michael", "foo"u8.ToArray());
+        var value = database.Get("michael");
+        Console.WriteLine("value = {0}", Encoding.ASCII.GetString(value));
+        // database.Set("michael", "foo"u8.ToArray());
         await Task.Delay(5000);
+
     }
 
     public static async Task Main()
@@ -42,6 +54,7 @@ class Program
         var program = new Program();
         program.AddServices();
         program.SpawnJobs();
+        program.RestoreDatabase();
         await program.Test();
     }
 }
