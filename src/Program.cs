@@ -33,10 +33,8 @@ class Program
     async Task Test()
     {
         var database = _serviceProvider.GetRequiredService<Database>();
-        database.Set("michael", "foo"u8.ToArray(), 100);
-        await Task.Delay(100);
-        var c = database.Count;
-        log.LogInformation("Count = {Count}", c);
+        database.Set("michael", "foo"u8.ToArray());
+        await Task.Delay(5000);
     }
 
     public static async Task Main()

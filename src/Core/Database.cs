@@ -7,6 +7,8 @@ using Microsoft.Extensions.Logging;
 
 namespace Lesniak.Redis.Core;
 
+public delegate void DatabaseUpdated();
+
 public class Database : IEnumerable<KeyValuePair<string, Database.DatabaseValue>>
 {
     private static readonly ILogger log = Logging.For<Database>();
@@ -14,6 +16,7 @@ public class Database : IEnumerable<KeyValuePair<string, Database.DatabaseValue>
     private readonly ConcurrentDictionary<string, DatabaseValue> _storage = new();
     private readonly IDateTimeProvider _dateTimeProvider;
     private readonly object _writeLock = new();
+    public event DatabaseUpdated DatabaseUpdates;
 
     public Database(IDateTimeProvider dateTimeProvider)
     {
@@ -40,6 +43,7 @@ public class Database : IEnumerable<KeyValuePair<string, Database.DatabaseValue>
             : null;
         DatabaseValue dbValue = new(value, expirationDate);
         _storage[key] = dbValue;
+        DatabaseUpdates.Invoke();
     }
 
     public byte[]? Get(string key)
