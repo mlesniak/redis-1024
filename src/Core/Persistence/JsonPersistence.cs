@@ -28,9 +28,12 @@ public class JsonPersistence : IPersistenceProvider
         // persistence, we do not allow access to the storage internals. Instead,
         // we retrieve all values manually. This is not the most performant way,
         // but sufficient for this example.
-        
-        // TODO(mlesniak) add comment about potential race condition.
-
+        //
+        // We do not lock writes while retrieving the data, so we might miss some
+        // values which are added while we create our internal data structure.
+        //
+        // This is fine for our playground example, but needs a better solution
+        // in a real-world application.
         ConcurrentDictionary<string, DatabaseValue> values = new();
         foreach (KeyValuePair<string, DatabaseValue> kv in _database)
         {
