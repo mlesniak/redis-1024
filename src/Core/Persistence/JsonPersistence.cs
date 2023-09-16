@@ -28,7 +28,9 @@ public class JsonPersistence : IPersistenceProvider
         // persistence, we do not allow access to the storage internals. Instead,
         // we retrieve all values manually. This is not the most performant way,
         // but sufficient for this example.
-        // TODO(mlesniak) Locking while copying values.
+        
+        // TODO(mlesniak) add comment about potential race condition.
+
         ConcurrentDictionary<string, DatabaseValue> values = new();
         foreach (KeyValuePair<string, DatabaseValue> kv in _database)
         {
@@ -44,6 +46,11 @@ public class JsonPersistence : IPersistenceProvider
 
     public void Load()
     {
+        if (!File.Exists("database.json"))
+        {
+            log.LogInformation("No database file found, skipping loading");
+            return;
+        }
         log.LogInformation("Loading database from disk");
 
         // Clean database.

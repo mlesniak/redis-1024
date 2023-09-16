@@ -54,9 +54,9 @@ class Program
     {
         var database = _serviceProvider.GetRequiredService<IDatabase>();
         var databaseManagement = _serviceProvider.GetRequiredService<IDatabaseManagement>();
+        // database.Set("michael", "foo"u8.ToArray());
         var value = database.Get("michael");
         Console.WriteLine("key = {0}", Encoding.ASCII.GetString(value));
-        // database.Set("michael", "foo"u8.ToArray());
-        await Task.Delay(5000);
+        await Task.Delay(8000);
     }
 }

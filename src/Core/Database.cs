@@ -71,14 +71,6 @@ public class Database : IEnumerable<KeyValuePair<string, Database.DatabaseValue>
         get => _storage.Count;
     }
 
-    public void LockWrites(Action operation)
-    {
-        lock (_writeLock)
-        {
-            operation();
-        }
-    }
-
     IEnumerator<KeyValuePair<string, DatabaseValue>> IEnumerable<KeyValuePair<string, DatabaseValue>>.GetEnumerator() =>
         _storage.GetEnumerator();
 
