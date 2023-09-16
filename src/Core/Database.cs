@@ -9,6 +9,7 @@ namespace Lesniak.Redis.Core;
 
 public delegate void DatabaseUpdated();
 
+// ReSharper disable once RedundantExtendsListEntry
 public class Database : IDatabaseManagement, IDatabase
 {
     private static readonly ILogger log = Logging.For<Database>();
