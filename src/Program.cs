@@ -26,7 +26,7 @@ class Program
             .AddSingleton<IJob, PersistenceJob>()
             .AddSingleton<IPersistenceProvider, JsonPersistence>()
             .AddSingleton<CommandHandler>()
-            .AddSingleton<RedisServer>()
+            .AddSingleton<NetworkServer>()
             .BuildServiceProvider();
     }
 
@@ -56,7 +56,7 @@ class Program
 
     private void StartNetworkServer()
     {
-        var server = _serviceProvider.GetRequiredService<RedisServer>();
+        var server = _serviceProvider.GetRequiredService<NetworkServer>();
         server.Start();
     }
 
