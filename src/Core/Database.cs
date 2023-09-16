@@ -17,7 +17,7 @@ public class Database : IDatabaseManagement, IDatabase
     private readonly ConcurrentDictionary<string, DatabaseValue> _storage = new();
     private readonly IDateTimeProvider _dateTimeProvider;
     private readonly ReaderWriterLockSlim _writeLock = new();
-    public event DatabaseUpdated DatabaseUpdates;
+    public event DatabaseUpdated? DatabaseUpdates;
 
     public Database(IDateTimeProvider dateTimeProvider)
     {
@@ -47,7 +47,7 @@ public class Database : IDatabaseManagement, IDatabase
                 : null;
             DatabaseValue dbValue = new(value, expirationDate);
             _storage[key] = dbValue;
-            DatabaseUpdates.Invoke();
+            DatabaseUpdates?.Invoke();
         }
         finally
         {
