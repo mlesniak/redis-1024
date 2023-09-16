@@ -15,7 +15,7 @@ public class Database : IDatabaseManagement, IDatabase
 
     private readonly ConcurrentDictionary<string, DatabaseValue> _storage = new();
     private readonly IDateTimeProvider _dateTimeProvider;
-    private readonly object _writeLock = new();
+    private readonly ReaderWriterLockSlim _writeLock = new();
     public event DatabaseUpdated DatabaseUpdates;
 
     public Database(IDateTimeProvider dateTimeProvider)
@@ -37,13 +37,21 @@ public class Database : IDatabaseManagement, IDatabase
 
     public void Set(string key, byte[] value, long? expiration = null)
     {
-        log.LogDebug("Setting {Key}", key);
-        DateTime? expirationDate = expiration.HasValue
-            ? DateTime.UtcNow.AddMilliseconds((double)expiration)
-            : null;
-        DatabaseValue dbValue = new(value, expirationDate);
-        _storage[key] = dbValue;
-        DatabaseUpdates.Invoke();
+        _writeLock.EnterReadLock();
+        try
+        {
+            log.LogDebug("Setting {Key}", key);
+            DateTime? expirationDate = expiration.HasValue
+                ? DateTime.UtcNow.AddMilliseconds((double)expiration)
+                : null;
+            DatabaseValue dbValue = new(value, expirationDate);
+            _storage[key] = dbValue;
+            DatabaseUpdates.Invoke();
+        }
+        finally
+        {
+            _writeLock.ExitReadLock();
+        }
     }
 
     public byte[]? Get(string key)
@@ -60,8 +68,29 @@ public class Database : IDatabaseManagement, IDatabase
 
     public void Remove(string key)
     {
-        log.LogDebug("Removing {Key}", key);
-        _storage.Remove(key, out DatabaseValue? _);
+        _writeLock.EnterReadLock();
+        try
+        {
+            log.LogDebug("Removing {Key}", key);
+            _storage.Remove(key, out DatabaseValue? _);
+        }
+        finally
+        {
+            _writeLock.ExitReadLock();
+        }
+    }
+
+    public void WriteLock(Action action)
+    {
+        _writeLock.EnterWriteLock();
+        try
+        {
+            action.Invoke();
+        }
+        finally
+        {
+            _writeLock.ExitWriteLock();
+        }   
     }
 
     // internal

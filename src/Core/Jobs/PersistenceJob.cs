@@ -6,12 +6,14 @@ namespace Lesniak.Redis.Core.Jobs;
 
 public class PersistenceJob : IJob
 {
-    private readonly IPersistenceProvider _persistenceProvider;
     private static readonly ILogger log = Logging.For<PersistenceJob>();
+    private readonly IPersistenceProvider _persistenceProvider;
+    private readonly IDatabaseManagement _database;
     private bool _dirty;
 
     public PersistenceJob(IDatabaseManagement database, IPersistenceProvider persistenceProvider)
     {
+        _database = database;
         _persistenceProvider = persistenceProvider;
         database.DatabaseUpdates += DatabaseUpdated;
     }
@@ -30,8 +32,11 @@ public class PersistenceJob : IJob
         {
             if (_dirty)
             {
-                _persistenceProvider.Save();
-                _dirty = false;
+                _database.WriteLock(() =>
+                {
+                    _persistenceProvider.Save();
+                    _dirty = false;
+                });
             }
 
             await Task.Delay(delay);

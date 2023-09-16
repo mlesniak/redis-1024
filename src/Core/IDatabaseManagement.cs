@@ -4,4 +4,5 @@ public interface IDatabaseManagement: IDatabase,  IEnumerable<KeyValuePair<strin
 {
     event DatabaseUpdated DatabaseUpdates;
     void Clear();
+    void WriteLock(Action action);
 }
