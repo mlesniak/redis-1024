@@ -74,6 +74,11 @@ public class Database : IEnumerable<KeyValuePair<string, Database.DatabaseValue>
     IEnumerator<KeyValuePair<string, DatabaseValue>> IEnumerable<KeyValuePair<string, DatabaseValue>>.GetEnumerator() =>
         _storage.GetEnumerator();
 
+    public void Clear()
+    {
+        _storage.Clear();
+    }
+
     public IEnumerator GetEnumerator()
     {
         return _storage.GetEnumerator();

@@ -15,11 +15,13 @@ public class JsonPersistence : IPersistenceProvider
     private static readonly ILogger log = Logging.For<PersistenceJob>();
     private readonly IDateTimeProvider _dateTimeProvider;
     private readonly IDatabaseManagement _database;
+    private readonly string _databaseName;
 
     public JsonPersistence(IDateTimeProvider dateTimeProvider, IDatabaseManagement database)
     {
         _dateTimeProvider = dateTimeProvider;
         _database = database;
+        _databaseName = Configuration.Get().DatabaseName;
     }
 
     public void Save()
@@ -43,28 +45,21 @@ public class JsonPersistence : IPersistenceProvider
         // Serialize as JSON and write to disk.
         log.LogInformation("Persisting database to disk");
         var json = JsonSerializer.Serialize(values);
-        // TODO(mlesniak) Externalize filename via configuration file.
-        File.WriteAllText("database.json", json);
+        File.WriteAllText(_databaseName, json);
     }
 
     public void Load()
     {
-        if (!File.Exists("database.json"))
+        if (!File.Exists(_databaseName))
         {
             log.LogInformation("No database file found, skipping loading");
             return;
         }
         log.LogInformation("Loading database from disk");
+        _database.Clear();
 
-        // Clean database.
-        foreach (KeyValuePair<string, DatabaseValue> kv in _database)
-        {
-            _database.Remove(kv.Key);
-        }
-
-        ConcurrentDictionary<string, DatabaseValue> values = new();
-        var json = File.ReadAllText("database.json");
-        var dict = JsonSerializer.Deserialize<Dictionary<string, DatabaseValue>>(json);
+        var json = File.ReadAllText(_databaseName);
+        var dict = JsonSerializer.Deserialize<Dictionary<string, DatabaseValue>>(json)!;
         foreach (KeyValuePair<string, DatabaseValue> kv in dict)
         {
             DatabaseValue dbValue = kv.Value;

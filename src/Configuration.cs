@@ -6,6 +6,7 @@ public class Configuration
 {
     public int MaxReadBuffer { get; init; } = 1024 * 1024;
     public int Port { get; init; } = 6379;
+    public string DatabaseName { get; init; } = "database.json";
 
     private static Configuration _singleton;
     private static IConfiguration _configuration;

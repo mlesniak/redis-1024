@@ -6,4 +6,5 @@ public interface IDatabaseManagement: IDatabase
 {
     event DatabaseUpdated DatabaseUpdates;
     IEnumerator GetEnumerator();
+    void Clear();
 }
