@@ -1,5 +1,6 @@
 ﻿using System.Text;
 
+using Lesniak.Redis.Communication.Network;
 using Lesniak.Redis.Core;
 using Lesniak.Redis.Core.Jobs;
 using Lesniak.Redis.Core.Persistence;
@@ -24,6 +25,8 @@ class Program
             .AddSingleton<IJob, CleanupJob>()
             .AddSingleton<IJob, PersistenceJob>()
             .AddSingleton<IPersistenceProvider, JsonPersistence>()
+            .AddSingleton<CommandHandler>()
+            .AddSingleton<RedisServer>()
             .BuildServiceProvider();
     }
 
@@ -47,7 +50,14 @@ class Program
         program.AddServices();
         program.SpawnJobs();
         program.LoadDatabase();
-        await program.Test();
+        program.StartNetworkServer();
+        // await program.Test();
+    }
+
+    private void StartNetworkServer()
+    {
+        var server = _serviceProvider.GetRequiredService<RedisServer>();
+        server.Start();
     }
 
     async Task Test()
