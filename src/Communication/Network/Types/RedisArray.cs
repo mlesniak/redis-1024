@@ -1,6 +1,8 @@
 using System.Collections;
 using System.Text;
 
+using Lesniak.Redis.Communication.Network.Types;
+
 namespace Lesniak.Redis.Core.Model;
 
 public class RedisArray : RedisType, IEnumerable

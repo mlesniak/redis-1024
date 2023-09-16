@@ -1,6 +1,7 @@
 using System.Net;
 using System.Net.Sockets;
 
+using Lesniak.Redis.Communication.Network.Types;
 using Lesniak.Redis.Core.Model;
 using Lesniak.Redis.Infrastructure;
 

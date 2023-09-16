@@ -1,5 +1,6 @@
 using System.Text;
 
+using Lesniak.Redis.Communication.Network.Types;
 using Lesniak.Redis.Core;
 using Lesniak.Redis.Core.Model;
 
