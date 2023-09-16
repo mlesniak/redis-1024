@@ -10,7 +10,6 @@ using Microsoft.Extensions.Logging;
 
 namespace Lesniak.Redis;
 
-// hallohallo
 class Program
 {
     private static ILogger log = Logging.For<Program>();
