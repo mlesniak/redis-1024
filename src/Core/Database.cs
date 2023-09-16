@@ -9,7 +9,8 @@ namespace Lesniak.Redis.Core;
 
 public delegate void DatabaseUpdated();
 
-public class Database : IEnumerable<KeyValuePair<string, Database.DatabaseValue>>
+// TODO(mlesniak) split core operations and management operations
+public class Database : IEnumerable<KeyValuePair<string, Database.DatabaseValue>>, IDatabase, IDatabaseManagement
 {
     private static readonly ILogger log = Logging.For<Database>();
 

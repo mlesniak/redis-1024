@@ -9,11 +9,11 @@ namespace Lesniak.Redis.Core.Jobs;
 
 public class PersistenceJob : IJob
 {
-    private readonly Database _database;
+    private readonly IDatabaseManagement _database;
     private static readonly ILogger log = Logging.For<PersistenceJob>();
     private bool _dirty;
 
-    public PersistenceJob(Database database)
+    public PersistenceJob(IDatabaseManagement database)
     {
         _database = database;
         database.DatabaseUpdates += DatabaseUpdated;

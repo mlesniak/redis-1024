@@ -1,21 +1,22 @@
 using System.Collections.Concurrent;
 using System.Text.Json;
 
+using Lesniak.Redis.Core.Jobs;
 using Lesniak.Redis.Infrastructure;
 
 using Microsoft.Extensions.Logging;
 
 using static Lesniak.Redis.Core.Database;
 
-namespace Lesniak.Redis.Core.Jobs;
+namespace Lesniak.Redis.Core.Persistence;
 
 public class JsonPersistence : IPersistenceProvider
 {
     private static readonly ILogger log = Logging.For<PersistenceJob>();
     private readonly IDateTimeProvider _dateTimeProvider;
-    private readonly Database _database;
+    private readonly IDatabaseManagement _database;
 
-    public JsonPersistence(IDateTimeProvider dateTimeProvider, Database database)
+    public JsonPersistence(IDateTimeProvider dateTimeProvider, IDatabaseManagement database)
     {
         _dateTimeProvider = dateTimeProvider;
         _database = database;

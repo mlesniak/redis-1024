@@ -2,6 +2,7 @@
 
 using Lesniak.Redis.Core;
 using Lesniak.Redis.Core.Jobs;
+using Lesniak.Redis.Core.Persistence;
 using Lesniak.Redis.Infrastructure;
 
 using Microsoft.Extensions.DependencyInjection;
@@ -9,6 +10,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Lesniak.Redis;
 
+// hallohallo
 class Program
 {
     private static ILogger log = Logging.For<Program>();
@@ -18,7 +20,8 @@ class Program
     {
         _serviceProvider = new ServiceCollection()
             .AddSingleton<IDateTimeProvider>(new DefaultDateTimeProvider())
-            .AddSingleton<Database>()
+            .AddSingleton<IDatabase, Database>()
+            .AddSingleton<IDatabaseManagement>(sp => (IDatabaseManagement)sp.GetRequiredService<IDatabase>())
             .AddSingleton<IJob, CleanupJob>()
             .AddSingleton<IJob, PersistenceJob>()
             .AddSingleton<IPersistenceProvider, JsonPersistence>()
@@ -50,11 +53,11 @@ class Program
 
     async Task Test()
     {
-        var database = _serviceProvider.GetRequiredService<Database>();
+        var database = _serviceProvider.GetRequiredService<IDatabase>();
+        var databaseManagement = _serviceProvider.GetRequiredService<IDatabaseManagement>();
         var value = database.Get("michael");
         Console.WriteLine("key = {0}", Encoding.ASCII.GetString(value));
         // database.Set("michael", "foo"u8.ToArray());
         await Task.Delay(5000);
-
     }
 }
