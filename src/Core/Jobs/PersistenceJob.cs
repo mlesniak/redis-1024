@@ -1,6 +1,3 @@
-using System.Collections.Concurrent;
-using System.Text.Json;
-
 using Lesniak.Redis.Infrastructure;
 
 using Microsoft.Extensions.Logging;
@@ -27,8 +24,7 @@ public class PersistenceJob : IJob
 
     public async Task Start()
     {
-        // TODO(mlesniak) Configurable
-        var delay = TimeSpan.FromSeconds(5);
+        var delay = Configuration.Get().PersistenceJob.Interval;
         log.LogInformation("Starting persistence job, checking for write every {Delay}", delay);
         while (true)
         {
@@ -40,5 +36,6 @@ public class PersistenceJob : IJob
 
             await Task.Delay(delay);
         }
+        // ReSharper disable once FunctionNeverReturns
     }
 }

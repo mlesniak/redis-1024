@@ -39,7 +39,7 @@ public class CleanupJob : IJob
 
     public async Task Start()
     {
-        var delay = TimeSpan.FromMinutes(1);
+        var delay = Configuration.Get().CleanupJob.Interval;
         log.LogInformation($"Starting cleanup job perdiodically every {delay}");
         while (true)
         {
