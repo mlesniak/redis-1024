@@ -33,20 +33,10 @@ class Program
         }
     }
 
-    private void RestoreDatabase()
+    private void LoadDatabase()
     {
         var provider = _serviceProvider.GetRequiredService<IPersistenceProvider>();
         provider.Load();
-    }
-
-    async Task Test()
-    {
-        var database = _serviceProvider.GetRequiredService<Database>();
-        var value = database.Get("michael");
-        Console.WriteLine("value = {0}", Encoding.ASCII.GetString(value));
-        // database.Set("michael", "foo"u8.ToArray());
-        await Task.Delay(5000);
-
     }
 
     public static async Task Main()
@@ -54,7 +44,17 @@ class Program
         var program = new Program();
         program.AddServices();
         program.SpawnJobs();
-        program.RestoreDatabase();
+        program.LoadDatabase();
         await program.Test();
+    }
+
+    async Task Test()
+    {
+        var database = _serviceProvider.GetRequiredService<Database>();
+        var value = database.Get("michael");
+        Console.WriteLine("key = {0}", Encoding.ASCII.GetString(value));
+        // database.Set("michael", "foo"u8.ToArray());
+        await Task.Delay(5000);
+
     }
 }
