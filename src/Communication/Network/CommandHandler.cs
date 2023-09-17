@@ -14,43 +14,39 @@ public class CommandHandler
         _database = database;
     }
 
-    public byte[] Execute(byte[]? stream)
+    public byte[] Execute(byte[] stream)
     {
-        if (stream == null)
-        {
-            return null!;
-        }
-
         // Commands are send as serialized arrays.
         var commands = RedisType.Deserialize<RedisArray>(stream);
-
         return Execute(commands);
     }
 
-
     byte[] Execute(RedisArray commandline)
     {
-        List<RedisType> commandParts = commandline.Values!;
-        var command = ((RedisString)commandParts[0]).Value!.ToLower();
-        return command switch
+        List<RedisType> parts = commandline.Values!;
+        var command = ((RedisString)parts[0]).Value!.ToLower();
+        var arguments = parts.Skip(1).ToList();
+
+        RedisType result = command switch
         {
-            // TODO(mlesniak) Handler return types, serialization happens here.
-            "set" => SetHandler(commandParts),
-            "get" => GetHandler(commandParts),
+            "set" => SetHandler(arguments),
+            "get" => GetHandler(arguments),
             _ => UnknownCommandHandler()
         };
+
+        return result.Serialize();
     }
 
-    private byte[] SetHandler(IReadOnlyList<RedisType> array)
+    private RedisType SetHandler(IReadOnlyList<RedisType> arguments)
     {
-        var setKey = ((RedisString)array[1]).Value!;
-        byte[] value = Encoding.ASCII.GetBytes(((RedisString)array[2]).Value!);
+        var setKey = ((RedisString)arguments[0]).Value!;
+        byte[] value = Encoding.ASCII.GetBytes(((RedisString)arguments[1]).Value!);
 
         int? expirationInMs = null;
-        if (array.Count > 3)
+        if (arguments.Count > 2)
         {
-            var type = ((RedisString)array[3]).Value!;
-            var num = Int32.Parse(((RedisString)array[4]).Value!);
+            var type = ((RedisString)arguments[2]).Value!;
+            var num = Int32.Parse(((RedisString)arguments[3]).Value!);
 
             expirationInMs = type.ToLower() switch
             {
@@ -61,20 +57,20 @@ public class CommandHandler
         }
 
         _database.Set(setKey, value, expirationInMs);
-        return "+OK\r\n"u8.ToArray();
+        return RedisString.From("OK");
     }
 
-    private byte[] GetHandler(IReadOnlyList<RedisType> commandParts)
+    private RedisType GetHandler(IReadOnlyList<RedisType> arguments)
     {
-        var getKey = ((RedisString)commandParts[1]).Value!;
+        var getKey = ((RedisString)arguments[0]).Value!;
         var resultBytes = _database.Get(getKey);
         return resultBytes == null
-            ? RedisString.Nil().Serialize()
-            : RedisString.From(resultBytes).Serialize();
+            ? RedisString.Nil()
+            : RedisString.From(resultBytes);
     }
 
-    private byte[] UnknownCommandHandler()
+    private RedisType UnknownCommandHandler()
     {
-        return "-UNKNOWN COMMAND\r\n"u8.ToArray();
+        return RedisString.From("-UNKNOWN COMMAND");
     }
 }

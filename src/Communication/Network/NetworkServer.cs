@@ -39,6 +39,7 @@ public class NetworkServer
             TcpClient client = _server.AcceptTcpClient();
             Task.Run(async () =>
             {
+                // TODO(mlesniak) try catch block to prevent server from crashing.
                 var id = Interlocked.Increment(ref clientId);
                 log.LogInformation("Client {Id} connected", id);
                 var stream = client.GetStream();
