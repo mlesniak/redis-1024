@@ -18,9 +18,18 @@ public class CommandHandler
     // TODO(mlesniak) support pipelining.
     public byte[] Execute(byte[] stream)
     {
-        // Commands are send as serialized arrays.
-        var commands = RedisType.Deserialize<RedisArray>(stream);
-        return Execute(commands);
+        int offset = 0;
+        List<byte> responses = new();
+        while (offset < stream.Length)
+        {
+            // Commands are send as serialized arrays.
+            var (commands, nextOffset) = RedisType.Deserialize<RedisArray>(stream, offset);
+            var singleResponse = Execute(commands);
+            responses.AddRange(singleResponse);
+            offset = nextOffset; 
+        }
+
+        return responses.ToArray();
     }
 
     byte[] Execute(RedisArray commandline)

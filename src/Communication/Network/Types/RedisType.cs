@@ -8,7 +8,7 @@ namespace Lesniak.Redis.Communication.Network.Types;
 /// </summary>
 public abstract class RedisType
 {
-    public static T Deserialize<T>(byte[] data) where T : RedisType => (T)Deserialize(data, 0).Item1;
+    public static (T, int) Deserialize<T>(byte[] data, int offset = 0 ) where T : RedisType => ((T, int))Deserialize(data, offset);
 
     public abstract byte[] Serialize();
 
