@@ -2,11 +2,11 @@ using System.Text;
 
 namespace Lesniak.Redis.Communication.Network.Types;
 
-public class RedisInt : RedisType
+public class RedisNumber : RedisType
 {
     public const char Identifier = ':';
 
-    private RedisInt(long value)
+    private RedisNumber(long value)
     {
         Value = value;
     }
@@ -19,7 +19,7 @@ public class RedisInt : RedisType
         var length = Int32.Parse(Encoding.ASCII.GetString(data, offset + 1, lengthEnd - offset - 1));
         int stringStart = lengthEnd + 2;
         int value = Int32.Parse(Encoding.ASCII.GetString(data, stringStart, length));
-        RedisInt result = new(value);
+        RedisNumber result = new(value);
         return (result, stringStart + length + 2);
     }
 
@@ -31,5 +31,5 @@ public class RedisInt : RedisType
         return Encoding.ASCII.GetBytes(sb.ToString());
     }
 
-    public static RedisInt From(long l) => new(l);
+    public static RedisNumber From(long l) => new(l);
 }

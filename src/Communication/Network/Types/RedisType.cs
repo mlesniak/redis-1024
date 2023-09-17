@@ -32,7 +32,7 @@ public abstract class RedisType
         {
             RedisArray.Identifier => RedisArray.Deserialize,
             RedisString.Identifier => RedisString.Deserialize,
-            RedisInt.Identifier => RedisInt.Deserialize,
+            RedisNumber.Identifier => RedisNumber.Deserialize,
             _ => throw new ArgumentOutOfRangeException(
                 nameof(identifier),
                 $"Unknown identifier byte {identifier}")
