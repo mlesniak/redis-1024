@@ -37,6 +37,9 @@ public class CommandHandler
         return result.Serialize();
     }
 
+    // Not sure if command line arguments are always strings? 
+    // If this is the case, we can have a more detailed type
+    // here and remove some casts in our handlers.
     private RedisType SetHandler(IReadOnlyList<RedisType> arguments)
     {
         var setKey = ((RedisString)arguments[0]).Value!;
