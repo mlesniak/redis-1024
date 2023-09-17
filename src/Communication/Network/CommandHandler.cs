@@ -5,6 +5,7 @@ using Lesniak.Redis.Core;
 
 namespace Lesniak.Redis.Communication.Network;
 
+// TODO(mlesniak) Add actual channel handling?
 public class CommandHandler
 {
     private readonly IDatabase _database;
@@ -14,6 +15,7 @@ public class CommandHandler
         _database = database;
     }
 
+    // TODO(mlesniak) support pipelining.
     public byte[] Execute(byte[] stream)
     {
         // Commands are send as serialized arrays.
@@ -31,10 +33,29 @@ public class CommandHandler
         {
             "set" => SetHandler(arguments),
             "get" => GetHandler(arguments),
+            "echo" => EchoHandler(arguments),
+            "subscribe" => SubscribeHandler(arguments),
             _ => UnknownCommandHandler()
         };
 
         return result.Serialize();
+    }
+
+    private RedisType SubscribeHandler(List<RedisType> arguments)
+    {
+        // Hack to make the real client work.
+        // We currently do not support channels.
+        return RedisArray.From(
+            RedisString.From("subscribe"),
+            RedisString.From(((RedisString)arguments[0]).Value!),
+            RedisNumber.From(1)
+        );
+    }
+
+    private RedisType EchoHandler(List<RedisType> arguments)
+    {
+        var response = ((RedisString)arguments[0]).Value!;
+        return RedisString.From(response);
     }
 
     // Not sure if command line arguments are always strings? 
@@ -74,6 +95,8 @@ public class CommandHandler
 
     private RedisType UnknownCommandHandler()
     {
-        return RedisString.From("-UNKNOWN COMMAND");
+        // TODO(mlesniak) explanation
+        return RedisString.From("OK");
+        // return RedisString.From("-UNKNOWN COMMAND");
     }
 }
