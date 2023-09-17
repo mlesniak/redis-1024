@@ -1,7 +1,5 @@
 using System.Text;
 
-using Lesniak.Redis.Core.Model;
-
 namespace Lesniak.Redis.Communication.Network.Types;
 
 /// <summary>

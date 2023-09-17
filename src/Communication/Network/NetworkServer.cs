@@ -2,7 +2,6 @@ using System.Net;
 using System.Net.Sockets;
 
 using Lesniak.Redis.Communication.Network.Types;
-using Lesniak.Redis.Core.Model;
 using Lesniak.Redis.Infrastructure;
 
 using Microsoft.Extensions.Logging;
@@ -16,10 +15,13 @@ public class NetworkServer
     private readonly TcpListener _server;
     private readonly CommandHandler _commandHandler;
     private readonly int _port;
+    private readonly int _maxReadBuffer;
 
     public NetworkServer(CommandHandler commandHandler)
     {
         _port = Configuration.Get().Port;
+        _maxReadBuffer = Configuration.Get().MaxReadBuffer;
+
         _server = new TcpListener(IPAddress.Loopback, _port);
         _commandHandler = commandHandler;
     }
@@ -49,22 +51,10 @@ public class NetworkServer
 
     private async Task HandleClient(NetworkStream stream)
     {
-        while (true)
+        while (await NetworkUtils.ReadAsync(stream, _maxReadBuffer) is { } readBytes)
         {
-            var commandline = await ReadCommandline(stream);
-            if (commandline == null)
-            {
-                return;
-            }
-
-            var responseBytes = _commandHandler.Execute(commandline);
-            stream.Write(responseBytes, 0, responseBytes.Length);
+            var responseBytes = _commandHandler.Execute(readBytes);
+            await stream.WriteAsync(responseBytes, 0, responseBytes.Length);
         }
-    }
-
-    private async Task<RedisArray?> ReadCommandline(NetworkStream networkStream)
-    {
-        var input = await NetworkUtils.ReadAsync(networkStream, Configuration.Get().MaxReadBuffer);
-        return input == null ? null : RedisType.Deserialize<RedisArray>(input);
     }
 }

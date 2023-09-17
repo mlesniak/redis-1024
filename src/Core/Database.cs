@@ -16,6 +16,7 @@ public class Database : IDatabaseManagement, IDatabase
 
     private readonly ConcurrentDictionary<string, DatabaseValue> _storage = new();
     private readonly IDateTimeProvider _dateTimeProvider;
+    // TODO(mlesniak) Add explanation.
     private readonly ReaderWriterLockSlim _writeLock = new();
     public event DatabaseUpdated? DatabaseUpdates;
 

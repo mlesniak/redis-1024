@@ -1,9 +1,7 @@
 using System.Collections;
 using System.Text;
 
-using Lesniak.Redis.Communication.Network.Types;
-
-namespace Lesniak.Redis.Core.Model;
+namespace Lesniak.Redis.Communication.Network.Types;
 
 public class RedisArray : RedisType, IEnumerable
 {
@@ -15,8 +13,6 @@ public class RedisArray : RedisType, IEnumerable
     }
 
     public List<RedisType> Values { get; }
-
-    public static RedisArray From(params RedisType[] elements) => new(elements);
 
     public static new (RedisType, int) Deserialize(byte[] data, int offset)
     {
@@ -48,11 +44,14 @@ public class RedisArray : RedisType, IEnumerable
         return Encoding.ASCII.GetBytes(sb.ToString());
     }
 
+    public static RedisArray From(params RedisType[] elements) => new(elements);
+
     public RedisType this[int index]
     {
         get { return Values[index]; }
     }
 
+    // TODO(mlesniak) fix this
     public IEnumerator GetEnumerator()
     {
         return Values.GetEnumerator();

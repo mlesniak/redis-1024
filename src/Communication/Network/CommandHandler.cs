@@ -2,7 +2,6 @@ using System.Text;
 
 using Lesniak.Redis.Communication.Network.Types;
 using Lesniak.Redis.Core;
-using Lesniak.Redis.Core.Model;
 
 namespace Lesniak.Redis.Communication.Network;
 
@@ -15,15 +14,27 @@ public class CommandHandler
         _database = database;
     }
 
-    // Commands are send as serialized arrays, which is
-    // the main reason we handle them as such internally
-    // as well.
-    public byte[] Execute(RedisArray commandline)
+    public byte[] Execute(byte[]? stream)
+    {
+        if (stream == null)
+        {
+            return null!;
+        }
+
+        // Commands are send as serialized arrays.
+        var commands = RedisType.Deserialize<RedisArray>(stream);
+
+        return Execute(commands);
+    }
+
+
+    byte[] Execute(RedisArray commandline)
     {
         List<RedisType> commandParts = commandline.Values!;
         var command = ((RedisString)commandParts[0]).Value!.ToLower();
         return command switch
         {
+            // TODO(mlesniak) Handler return types, serialization happens here.
             "set" => SetHandler(commandParts),
             "get" => GetHandler(commandParts),
             _ => UnknownCommandHandler()
