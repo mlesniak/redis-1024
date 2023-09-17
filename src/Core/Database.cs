@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Concurrent;
+using System.Text;
 
 using Lesniak.Redis.Infrastructure;
 

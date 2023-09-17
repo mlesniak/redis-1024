@@ -57,6 +57,11 @@ class Program
     private void StartNetworkServer()
     {
         var server = _serviceProvider.GetRequiredService<NetworkServer>();
+        var database = _serviceProvider.GetRequiredService<IDatabase>();
+
+        // TODO(mlesniak) find proper place and explain
+        database.Set("__Booksleeve_TieBreak", "OK"u8.ToArray());
+
         server.Start();
     }
 
