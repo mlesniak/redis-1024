@@ -3,7 +3,7 @@ using System.Text;
 
 namespace Lesniak.Redis.Communication.Network.Types;
 
-public class RedisArray : RedisType, IEnumerable
+public class RedisArray : RedisType, IEnumerable<RedisType>
 {
     public const char Identifier = '*';
 
@@ -12,7 +12,7 @@ public class RedisArray : RedisType, IEnumerable
         Values = elements.ToList();
     }
 
-    public List<RedisType> Values { get; }
+    public IList<RedisType> Values { get; }
 
     public static new (RedisType, int) Deserialize(byte[] data, int offset)
     {
@@ -36,11 +36,11 @@ public class RedisArray : RedisType, IEnumerable
         var sb = new StringBuilder();
         sb.Append($"*{Values!.Count}");
         sb.Append("\r\n");
-        Values.ForEach(v =>
+        foreach (RedisType value in Values)
         {
-            byte[] array = v.Serialize();
+            byte[] array = value.Serialize();
             sb.Append(Encoding.ASCII.GetString(array));
-        });
+        }
         return Encoding.ASCII.GetBytes(sb.ToString());
     }
 
@@ -51,8 +51,12 @@ public class RedisArray : RedisType, IEnumerable
         get { return Values[index]; }
     }
 
-    // TODO(mlesniak) fix this
-    public IEnumerator GetEnumerator()
+    public IEnumerator<RedisType> GetEnumerator()
+    {
+        return Values.GetEnumerator();
+    }
+
+    IEnumerator IEnumerable.GetEnumerator()
     {
         return Values.GetEnumerator();
     }

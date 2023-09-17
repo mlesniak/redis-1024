@@ -23,7 +23,7 @@ public class CommandHandler
 
     byte[] Execute(RedisArray commandline)
     {
-        List<RedisType> parts = commandline.Values!;
+        IList<RedisType> parts = commandline.Values!;
         var command = ((RedisString)parts[0]).Value!.ToLower();
         var arguments = parts.Skip(1).ToList();
 
