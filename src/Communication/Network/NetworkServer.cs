@@ -39,13 +39,23 @@ public class NetworkServer
             TcpClient client = _server.AcceptTcpClient();
             Task.Run(async () =>
             {
-                // TODO(mlesniak) try catch block to prevent server from crashing.
                 var id = Interlocked.Increment(ref clientId);
-                log.LogInformation("Client {Id} connected", id);
-                var stream = client.GetStream();
-                await HandleClient(stream);
-                log.LogInformation("Client {Id} disconnected", id);
-                stream.Close();
+                NetworkStream stream = null;
+                try
+                {
+                    log.LogInformation("Client {Id} connected", id);
+                    stream = client.GetStream();
+                    await HandleClient(stream);
+                    log.LogInformation("Client {Id} disconnected", id);
+                }
+                catch (Exception e)
+                {
+                    log.LogError("Unable to handle client {Id}: {Exception}", id, e.Message);
+                }
+                finally
+                {
+                    stream?.Close();
+                }
             });
         }
     }
