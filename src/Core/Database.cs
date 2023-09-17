@@ -16,7 +16,12 @@ public class Database : IDatabaseManagement, IDatabase
 
     private readonly ConcurrentDictionary<string, DatabaseValue> _storage = new();
     private readonly IDateTimeProvider _dateTimeProvider;
-    // TODO(mlesniak) Add explanation.
+    // We use a ReaderWriterLockSlim to allow multiple writers of 
+    // a single value to be processed in parallel (since we use a 
+    // thread-safe data structure). At the same time, we want to 
+    // prevent any single-element writes from interrupting the
+    // periodic persistence job, which is why we use a write lock
+    // for that. Hence, the name is a bit misleading.
     private readonly ReaderWriterLockSlim _writeLock = new();
     public event DatabaseUpdated? DatabaseUpdates;
 
