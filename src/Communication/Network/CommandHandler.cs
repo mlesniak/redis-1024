@@ -5,7 +5,6 @@ using Lesniak.Redis.Core;
 
 namespace Lesniak.Redis.Communication.Network;
 
-// TODO(mlesniak) Add actual channel handling?
 public class CommandHandler
 {
     private readonly IDatabase _database;
@@ -15,7 +14,6 @@ public class CommandHandler
         _database = database;
     }
 
-    // TODO(mlesniak) support pipelining.
     public byte[] Execute(byte[] stream)
     {
         int offset = 0;
@@ -26,7 +24,7 @@ public class CommandHandler
             var (commands, nextOffset) = RedisType.Deserialize<RedisArray>(stream, offset);
             var singleResponse = Execute(commands);
             responses.AddRange(singleResponse);
-            offset = nextOffset; 
+            offset = nextOffset;
         }
 
         return responses.ToArray();
@@ -35,7 +33,8 @@ public class CommandHandler
     byte[] Execute(RedisArray commandline)
     {
         IList<RedisType> parts = commandline.Values!;
-        var command = ((RedisString)parts[0]).Value!.ToLower();
+        var rs = ((RedisBulkString)parts[0]).Value!;
+        var command = Encoding.ASCII.GetString(rs).ToLower();
         var arguments = parts.Skip(1).ToList();
 
         RedisType result = command switch
@@ -53,33 +52,31 @@ public class CommandHandler
     private RedisType SubscribeHandler(List<RedisType> arguments)
     {
         // Hack to make the real client work.
-        // We currently do not support channels.
+        // We currently do not support channels,
+        // but it's on our roadmap.
         return RedisArray.From(
-            RedisString.From("subscribe"),
-            RedisString.From(((RedisString)arguments[0]).Value!),
+            RedisBulkString.From("subscribe"),
+            RedisBulkString.From(((RedisBulkString)arguments[0]).Value!),
             RedisNumber.From(1)
         );
     }
 
     private RedisType EchoHandler(List<RedisType> arguments)
     {
-        var response = ((RedisString)arguments[0]).Value!;
-        return RedisString.From(response);
+        var response = ((RedisBulkString)arguments[0]).Value!;
+        return RedisBulkString.From(response);
     }
 
-    // Not sure if command line arguments are always strings? 
-    // If this is the case, we can have a more detailed type
-    // here and remove some casts in our handlers.
     private RedisType SetHandler(IReadOnlyList<RedisType> arguments)
     {
-        var setKey = ((RedisString)arguments[0]).Value!;
-        byte[] value = Encoding.ASCII.GetBytes(((RedisString)arguments[1]).Value!);
+        var setKey = ((RedisBulkString)arguments[0]).ToAsciiString();
+        byte[] value = ((RedisBulkString)arguments[1]).Value!;
 
         int? expirationInMs = null;
         if (arguments.Count > 2)
         {
-            var type = ((RedisString)arguments[2]).Value!;
-            var num = Int32.Parse(((RedisString)arguments[3]).Value!);
+            var type = ((RedisBulkString)arguments[2]).ToAsciiString();
+            var num = Int32.Parse(((RedisBulkString)arguments[3]).ToAsciiString());
 
             expirationInMs = type.ToLower() switch
             {
@@ -90,22 +87,20 @@ public class CommandHandler
         }
 
         _database.Set(setKey, value, expirationInMs);
-        return RedisString.From("OK");
+        return RedisSimpleString.From("OK");
     }
 
     private RedisType GetHandler(IReadOnlyList<RedisType> arguments)
     {
-        var getKey = ((RedisString)arguments[0]).Value!;
+        var getKey = ((RedisBulkString)arguments[0]).ToAsciiString();
         var resultBytes = _database.Get(getKey);
         return resultBytes == null
-            ? RedisString.Nil()
-            : RedisString.From(resultBytes);
+            ? RedisBulkString.Nil()
+            : RedisBulkString.From(resultBytes);
     }
 
     private RedisType UnknownCommandHandler()
     {
-        // TODO(mlesniak) explanation
-        return RedisString.From("OK");
-        // return RedisString.From("-UNKNOWN COMMAND");
+        return RedisErrorString.From("ERR UNKNOWN COMMAND");
     }
 }

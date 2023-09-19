@@ -14,7 +14,7 @@ public class RedisArray : RedisType, IEnumerable<RedisType>
 
     public IList<RedisType> Values { get; }
 
-    public static new (RedisType, int) Deserialize(byte[] data, int offset)
+    public static (RedisType, int) Deserialize(byte[] data, int offset)
     {
         RedisArray result = new();
         var numElementsIndexEnd = Array.IndexOf(data, (byte)'\r', offset);
@@ -23,7 +23,7 @@ public class RedisArray : RedisType, IEnumerable<RedisType>
         offset = numElementsIndexEnd + 2;
         for (var i = 0; i < numElements; i++)
         {
-            (RedisType elem, int nextArrayOffset) = RedisType.Deserialize(data, offset);
+            (RedisType elem, int nextArrayOffset) = RedisType.Deserialize<RedisType>(data, offset);
             result.Values.Add(elem);
             offset = nextArrayOffset;
         }
