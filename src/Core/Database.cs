@@ -15,8 +15,51 @@ public class Database : IDatabaseManagement, IDatabase
 {
     private static readonly ILogger log = Logging.For<Database>();
 
+    // -----
+    public delegate void MessageReceiver(string channel, byte[] message);
+    private ConcurrentDictionary<string, List<MessageReceiver>> _subscriptions = new();
+    public void Publish(string channel, byte[] message)
+    {
+        if (!_subscriptions.TryGetValue(channel, out List<MessageReceiver>? receivers))
+        {
+            return;
+        }
+
+        foreach (MessageReceiver receiver in receivers)
+        {
+            receiver.Invoke(channel, message);
+        }
+    }
+
+    public void Subscribe(string channel, MessageReceiver receiver)
+    {
+        _subscriptions.AddOrUpdate(channel,
+            new List<MessageReceiver> { receiver },
+            (_, current) =>
+            {
+                // TODO(mlesniak) concurrent list
+                current.Add(receiver);
+
+                return current;
+            }
+        );
+    }
+
+    public void Unsubscribe(string channel, MessageReceiver receiver)
+    {
+        if (!_subscriptions.TryGetValue(channel, out List<MessageReceiver>? receivers))
+        {
+            return;
+        }
+
+        receivers.Remove(receiver);
+    }
+    // -----
+
     private readonly ConcurrentDictionary<string, DatabaseValue> _storage = new();
+
     private readonly IDateTimeProvider _dateTimeProvider;
+
     // We use a ReaderWriterLockSlim to allow multiple writers of 
     // a single value to be processed in parallel (since we use a 
     // thread-safe data structure). At the same time, we want to 
@@ -98,7 +141,7 @@ public class Database : IDatabaseManagement, IDatabase
         finally
         {
             _writeLock.ExitWriteLock();
-        }   
+        }
     }
 
     // internal

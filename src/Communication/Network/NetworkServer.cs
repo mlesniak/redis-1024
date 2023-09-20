@@ -59,6 +59,8 @@ public class NetworkServer
         }
     }
 
+    // TODO(mlesniak) async event handler receiving messages to send to a
+    //                client (id, string channel, byte[] payload)
     private async Task HandleClient(int id, NetworkStream stream)
     {
         while (await NetworkUtils.ReadAsync(stream, _maxReadBuffer) is { } readBytes)
