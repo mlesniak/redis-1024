@@ -54,6 +54,8 @@ public class NetworkServer
         }
         finally
         {
+            // TODO(mlesniak) unsubscribe from everything?
+            // TODO(mlesniak) error handling on publish
             stream?.Close();
         }
     }

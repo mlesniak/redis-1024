@@ -6,6 +6,7 @@ namespace Lesniak.Redis.Communication.Network.Types;
 /// Generic type for all Redis types, forcing them to implement both
 /// serialization and deserialization methods.
 /// </summary>
+/// // TODO(mlesniak) maybe call this RedisValue instead?
 public abstract class RedisType
 {
     public abstract byte[] Serialize();
