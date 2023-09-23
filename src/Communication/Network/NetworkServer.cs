@@ -20,7 +20,6 @@ public class NetworkServer
     {
         _database = database;
         _port = Configuration.Get().Port;
-
         _server = new TcpListener(IPAddress.Loopback, _port);
     }
 
@@ -33,30 +32,33 @@ public class NetworkServer
         while (true)
         {
             TcpClient client = _server.AcceptTcpClient();
-            Task.Run(() => StartClientHandling(client));
+            // TODO(mlesniak) I'm pretty sure using async is wrong here.
+            Task.Run(async () =>
+            {
+                NetworkStream stream = client.GetStream();
+                await HandleClient(stream);
+            });
         }
         // ReSharper disable once FunctionNeverReturns
     }
 
-    private async Task StartClientHandling(TcpClient client)
+    private async Task HandleClient(NetworkStream stream)
     {
         var clientId = Guid.NewGuid().ToString();
-        NetworkStream stream = null;
         try
         {
-            stream = client.GetStream();
             ClientHandler clientHandler = new(clientId, _database, stream);
             await clientHandler.Run();
         }
         catch (Exception e)
         {
-            log.LogError("Unable to handle client {Id}: {Exception}", clientId, e.Message);
+            log.LogError("Error while handling client {Id}: {Exception}", clientId, e.Message);
         }
         finally
         {
             // TODO(mlesniak) unsubscribe from everything?
             // TODO(mlesniak) error handling on publish
-            stream?.Close();
+            stream.Close();
         }
     }
 }
