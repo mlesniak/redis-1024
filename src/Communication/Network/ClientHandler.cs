@@ -137,7 +137,7 @@ public class ClientHandler
         return RedisErrorString.From("ERR UNKNOWN COMMAND");
     }
 
-    public Task Run()
+    public async Task Run()
     {
         log.LogInformation("Client {Id} connected", _clientId);
         while (await NetworkUtils.ReadAsync(_stream, Configuration.Get().MaxReadBuffer) is { } readBytes)
