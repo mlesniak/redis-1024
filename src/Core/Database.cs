@@ -1,6 +1,5 @@
 using System.Collections;
 using System.Collections.Concurrent;
-using System.Text;
 
 using Lesniak.Redis.Infrastructure;
 
@@ -16,28 +15,28 @@ public class Database : IDatabaseManagement, IDatabase
     private static readonly ILogger log = Logging.For<Database>();
 
     // -----
-    public delegate void MessageReceiver(string channel, byte[] message);
-    private ConcurrentDictionary<string, List<MessageReceiver>> _subscriptions = new();
+    public delegate void AsyncMessageReceiver(string channel, byte[] message);
+    private readonly ConcurrentDictionary<string, List<AsyncMessageReceiver>> _subscriptions = new();
     public void Publish(string channel, byte[] message)
     {
-        if (!_subscriptions.TryGetValue(channel, out List<MessageReceiver>? receivers))
+        if (!_subscriptions.TryGetValue(channel, out List<AsyncMessageReceiver>? receivers))
         {
             return;
         }
 
-        foreach (MessageReceiver receiver in receivers)
+        foreach (AsyncMessageReceiver receiver in receivers)
         {
             receiver.Invoke(channel, message);
         }
     }
 
-    public void Subscribe(string channel, MessageReceiver receiver)
+    public void Subscribe(string channel, AsyncMessageReceiver receiver)
     {
         _subscriptions.AddOrUpdate(channel,
-            new List<MessageReceiver> { receiver },
+            new List<AsyncMessageReceiver> { receiver },
             (_, current) =>
             {
-                // TODO(mlesniak) concurrent list
+                // TODO(mlesniak) concurrency-safe list
                 current.Add(receiver);
 
                 return current;
@@ -45,9 +44,9 @@ public class Database : IDatabaseManagement, IDatabase
         );
     }
 
-    public void Unsubscribe(string channel, MessageReceiver receiver)
+    public void Unsubscribe(string channel, AsyncMessageReceiver receiver)
     {
-        if (!_subscriptions.TryGetValue(channel, out List<MessageReceiver>? receivers))
+        if (!_subscriptions.TryGetValue(channel, out List<AsyncMessageReceiver>? receivers))
         {
             return;
         }

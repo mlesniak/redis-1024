@@ -26,7 +26,7 @@ class Program
             .AddSingleton<IJob, CleanupJob>()
             .AddSingleton<IJob, PersistenceJob>()
             .AddSingleton<IPersistenceProvider, JsonPersistence>()
-            .AddSingleton<CommandHandler>()
+            .AddSingleton<ClientHandler>()
             .AddSingleton<NetworkServer>()
             .BuildServiceProvider();
     }
