@@ -21,17 +21,18 @@ public class Database : IDatabaseManagement, IDatabase
 
     private readonly ConcurrentDictionary<string, List<AsyncMessageReceiver>> _subscriptions = new();
 
-    public void Publish(string channel, byte[] message)
+    public int Publish(string channel, byte[] message)
     {
         if (!_subscriptions.TryGetValue(channel, out List<AsyncMessageReceiver>? receivers))
         {
-            return;
+            return 0;
         }
 
         foreach (AsyncMessageReceiver receiver in receivers)
         {
             receiver.Invoke(channel, message);
         }
+        return receivers.Count;
     }
 
     public void Subscribe(string channel, AsyncMessageReceiver receiver)

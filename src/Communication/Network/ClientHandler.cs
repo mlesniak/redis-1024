@@ -60,9 +60,8 @@ public class ClientHandler
         var channel = ((RedisBulkString)arguments[0]).ToAsciiString();
         var message = ((RedisBulkString)arguments[1]).Value!;
 
-        _database.Publish(channel, message);
-        // TODO(mlesniak) number of subscribers
-        return RedisNumber.From(1);
+        var sendTo = _database.Publish(channel, message);
+        return RedisNumber.From(sendTo);
     }
 
     // TODO(mlesniak) support multiple channel per single subscription

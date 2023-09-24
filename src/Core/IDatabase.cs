@@ -6,7 +6,7 @@ public interface IDatabase
     byte[]? Get(string key);
     void Remove(string key);
 
-    void Publish(string channel, byte[] message);
+    int Publish(string channel, byte[] message);
     void Subscribe(string channel, Database.AsyncMessageReceiver receiver);
     void Unsubscribe(string channel, Database.AsyncMessageReceiver receiver);
 }
