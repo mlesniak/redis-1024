@@ -10,16 +10,14 @@ namespace Lesniak.Redis.Communication.Network;
 
 public class NetworkServer
 {
-    private readonly IDatabase _database;
     private readonly ClientHandler _clientHandler;
     private static readonly ILogger log = Logging.For<NetworkServer>();
 
     private readonly TcpListener _server;
     private readonly int _port;
 
-    public NetworkServer(IDatabase database, ClientHandler clientHandler)
+    public NetworkServer(ClientHandler clientHandler)
     {
-        _database = database;
         _clientHandler = clientHandler;
         _port = Configuration.Get().Port;
         _server = new TcpListener(IPAddress.Loopback, _port);
@@ -37,6 +35,7 @@ public class NetworkServer
             Task.Run(() =>
             {
                 NetworkStream stream = client.GetStream();
+                stream.WriteTimeout = 1000;
                 HandleClient(stream);
             });
         }
@@ -73,12 +72,11 @@ public class NetworkServer
                     stream.Write(response, 0, response.Length);
                 }
             }
-
             log.LogInformation("Client {Id} disconnected", ctx.ClientId);
         }
         catch (Exception e)
         {
-            log.LogError("Error while handling client {Id}: {Exception}", ctx.ClientId, e.Message);
+            log.LogWarning("Error while handling client {Id}: {Exception}", ctx.ClientId, e.Message);
         }
         finally
         {

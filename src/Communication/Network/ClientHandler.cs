@@ -32,10 +32,7 @@ public class ClientHandler
             offset = nextOffset;
         }
 
-        byte[] handle = responses.ToArray();
-        var o = Encoding.ASCII.GetString(handle);
-        Console.WriteLine(o);
-        return handle;
+        return responses.ToArray();
     }
 
     byte[] ExecuteCommand(ClientContext ctx, RedisArray commandline)
@@ -51,11 +48,30 @@ public class ClientHandler
             "get" => GetHandler(arguments),
             "echo" => EchoHandler(arguments),
             "subscribe" => SubscribeHandler(ctx, arguments),
+            "unsubscribe" => UnsubscribeHandler(ctx, arguments),
             "publish" => PublishHandler(arguments),
             _ => UnknownCommandHandler(arguments)
         };
 
         return result.Serialize();
+    }
+
+    // TODO(mlesniak) unsubscribe from all
+    private RedisType UnsubscribeHandler(ClientContext ctx, List<RedisType> arguments)
+    {
+        List<string> unsubscribedFrom = new();
+        foreach (var ch in arguments)
+        {
+            var channel = ((RedisBulkString)ch).ToAsciiString();
+            _database.Unsubscribe(ctx.ClientId, channel);
+            unsubscribedFrom.Add(channel);
+        }
+
+        var response = unsubscribedFrom
+            .Select(channel => RedisBulkString.From(channel))
+            .Prepend(RedisBulkString.From("unsubscribe"))
+            .ToArray();
+        return RedisArray.From(response);
     }
 
     private RedisType PublishHandler(List<RedisType> arguments)
@@ -73,7 +89,7 @@ public class ClientHandler
         foreach (var ch in arguments)
         {
             var channel = ((RedisBulkString)ch).ToAsciiString();
-            var subscribers = _database.Subscribe(channel, ResponseAction);
+            var subscribers = _database.Subscribe(ctx.ClientId, channel, ResponseAction);
             subscriberCounts.Add((channel, subscribers));
         }
 

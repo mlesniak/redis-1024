@@ -15,11 +15,10 @@ public class Database : IDatabaseManagement, IDatabase
     private static readonly ILogger log = Logging.For<Database>();
 
     // -----
-    // TODO(mlesniak) unsubscribe from everything?
-    // TODO(mlesniak) error handling on publish
     public delegate void AsyncMessageReceiver(string channel, byte[] message);
 
     private readonly ConcurrentDictionary<string, List<AsyncMessageReceiver>> _subscriptions = new();
+    private readonly ConcurrentDictionary<string, AsyncMessageReceiver> _clientReceivers = new();
 
     public int Publish(string channel, byte[] message)
     {
@@ -28,15 +27,26 @@ public class Database : IDatabaseManagement, IDatabase
             return 0;
         }
 
-        foreach (AsyncMessageReceiver receiver in receivers)
+        for (int i = receivers.Count - 1; i >= 0; i--)
         {
-            receiver.Invoke(channel, message);
+            AsyncMessageReceiver receiver = receivers[i];
+            try
+            {
+                receiver.Invoke(channel, message);
+            }
+            catch (Exception e)
+            {
+                // This won't work.
+                receivers.Remove(receiver);
+                Console.WriteLine($"XXX {nameof(e)}");
+            }
         }
         return receivers.Count;
     }
 
-    public int Subscribe(string channel, AsyncMessageReceiver receiver)
+    public int Subscribe(string clientId, string channel, AsyncMessageReceiver receiver)
     {
+        _clientReceivers[clientId] = receiver;
         _subscriptions.AddOrUpdate(channel,
             new List<AsyncMessageReceiver> { receiver },
             (_, current) =>
@@ -49,7 +59,7 @@ public class Database : IDatabaseManagement, IDatabase
                 return current;
             }
         );
-        if (_subscriptions.TryGetValue(channel, out List<AsyncMessageReceiver> receivers))
+        if (_subscriptions.TryGetValue(channel, out List<AsyncMessageReceiver>? receivers))
         {
             return receivers.Count;
         }
@@ -58,8 +68,9 @@ public class Database : IDatabaseManagement, IDatabase
         return 1;
     }
 
-    public void Unsubscribe(string channel, AsyncMessageReceiver receiver)
+    public void Unsubscribe(string clientId, string channel)
     {
+        var receiver = _clientReceivers[clientId];
         if (!_subscriptions.TryGetValue(channel, out List<AsyncMessageReceiver>? receivers))
         {
             return;
