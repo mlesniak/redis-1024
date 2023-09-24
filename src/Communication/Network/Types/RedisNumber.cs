@@ -2,7 +2,7 @@ using System.Text;
 
 namespace Lesniak.Redis.Communication.Network.Types;
 
-public class RedisNumber : RedisType
+public class RedisNumber : RedisValue
 {
     public const char Identifier = ':';
 
@@ -13,7 +13,7 @@ public class RedisNumber : RedisType
 
     public long Value { get; }
 
-    public static new (RedisType, int) Deserialize(byte[] data, int offset)
+    public static new (RedisValue, int) Deserialize(byte[] data, int offset)
     {
         var lengthEnd = Array.IndexOf(data, (byte)'\r', offset);
         var length = Int32.Parse(Encoding.ASCII.GetString(data, offset + 1, lengthEnd - offset - 1));

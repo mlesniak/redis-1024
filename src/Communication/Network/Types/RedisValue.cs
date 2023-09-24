@@ -6,8 +6,7 @@ namespace Lesniak.Redis.Communication.Network.Types;
 /// Generic type for all Redis types, forcing them to implement both
 /// serialization and deserialization methods.
 /// </summary>
-/// // TODO(mlesniak) maybe call this RedisValue instead?
-public abstract class RedisType
+public abstract class RedisValue
 {
     public abstract byte[] Serialize();
 
@@ -28,10 +27,10 @@ public abstract class RedisType
     /// <exception cref="ArgumentOutOfRangeException">
     /// Thrown in case the identifier byte is unknown.
     /// </exception>
-    public static (T, int) Deserialize<T>(byte[] data, int offset) where T: RedisType
+    public static (T, int) Deserialize<T>(byte[] data, int offset) where T: RedisValue
     {
         byte identifier = data[offset];
-        Func<byte[], int, (RedisType, int)> method = (char)identifier switch
+        Func<byte[], int, (RedisValue, int)> method = (char)identifier switch
         {
             RedisArray.Identifier => RedisArray.Deserialize,
             RedisBulkString.Identifier => RedisBulkString.Deserialize,

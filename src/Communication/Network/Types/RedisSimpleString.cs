@@ -2,7 +2,7 @@ using System.Text;
 
 namespace Lesniak.Redis.Communication.Network.Types;
 
-public class RedisSimpleString : RedisType
+public class RedisSimpleString : RedisValue
 {
     const char Identifier = '+';
     private readonly string _value;

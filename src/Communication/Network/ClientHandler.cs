@@ -26,7 +26,7 @@ public class ClientHandler
         while (offset < stream.Length)
         {
             // Commands are send as serialized arrays.
-            var (commands, nextOffset) = RedisType.Deserialize<RedisArray>(stream, offset);
+            var (commands, nextOffset) = RedisValue.Deserialize<RedisArray>(stream, offset);
             var singleResponse = ExecuteCommand(ctx, commands);
             responses.AddRange(singleResponse);
             offset = nextOffset;
@@ -37,12 +37,12 @@ public class ClientHandler
 
     byte[] ExecuteCommand(ClientContext ctx, RedisArray commandline)
     {
-        IList<RedisType> parts = commandline.Values!;
+        IList<RedisValue> parts = commandline.Values!;
         var rs = ((RedisBulkString)parts[0]).Value!;
         var command = Encoding.ASCII.GetString(rs).ToLower();
         var arguments = parts.Skip(1).ToList();
 
-        RedisType result = command switch
+        RedisValue result = command switch
         {
             "set" => SetHandler(arguments),
             "get" => GetHandler(arguments),
@@ -56,7 +56,7 @@ public class ClientHandler
         return result.Serialize();
     }
 
-    private RedisType UnsubscribeHandler(ClientContext ctx, List<RedisType> arguments)
+    private RedisValue UnsubscribeHandler(ClientContext ctx, List<RedisValue> arguments)
     {
         List<string> unsubscribedFrom = new();
 
@@ -81,7 +81,7 @@ public class ClientHandler
         return RedisArray.From(response);
     }
 
-    private RedisType PublishHandler(List<RedisType> arguments)
+    private RedisValue PublishHandler(List<RedisValue> arguments)
     {
         var channel = ((RedisBulkString)arguments[0]).ToAsciiString();
         var message = ((RedisBulkString)arguments[1]).Value!;
@@ -90,7 +90,7 @@ public class ClientHandler
         return RedisNumber.From(sendTo);
     }
 
-    private RedisType SubscribeHandler(ClientContext ctx, List<RedisType> arguments)
+    private RedisValue SubscribeHandler(ClientContext ctx, List<RedisValue> arguments)
     {
         List<(string, int)> subscriberCounts = new();
         foreach (var ch in arguments)
@@ -102,7 +102,7 @@ public class ClientHandler
 
         var response = subscriberCounts
             .SelectMany(tuple =>
-                new RedisType[]
+                new RedisValue[]
                 {
                     RedisBulkString.From(tuple.Item1),
                     RedisNumber.From(tuple.Item2)
@@ -123,13 +123,13 @@ public class ClientHandler
         }
     }
 
-    private RedisType EchoHandler(List<RedisType> arguments)
+    private RedisValue EchoHandler(List<RedisValue> arguments)
     {
         var response = ((RedisBulkString)arguments[0]).Value!;
         return RedisBulkString.From(response);
     }
 
-    private RedisType SetHandler(IReadOnlyList<RedisType> arguments)
+    private RedisValue SetHandler(IReadOnlyList<RedisValue> arguments)
     {
         var setKey = ((RedisBulkString)arguments[0]).ToAsciiString();
         byte[] value = ((RedisBulkString)arguments[1]).Value!;
@@ -152,7 +152,7 @@ public class ClientHandler
         return RedisSimpleString.From("OK");
     }
 
-    private RedisType GetHandler(IReadOnlyList<RedisType> arguments)
+    private RedisValue GetHandler(IReadOnlyList<RedisValue> arguments)
     {
         var getKey = ((RedisBulkString)arguments[0]).ToAsciiString();
         var resultBytes = _database.Get(getKey);
@@ -161,7 +161,7 @@ public class ClientHandler
             : RedisBulkString.From(resultBytes);
     }
 
-    private RedisType UnknownCommandHandler(List<RedisType> arguments)
+    private RedisValue UnknownCommandHandler(List<RedisValue> arguments)
     {
         var command = "";
         if (arguments.Count > 0)

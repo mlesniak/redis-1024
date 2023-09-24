@@ -3,18 +3,18 @@ using System.Text;
 
 namespace Lesniak.Redis.Communication.Network.Types;
 
-public class RedisArray : RedisType, IEnumerable<RedisType>
+public class RedisArray : RedisValue, IEnumerable<RedisValue>
 {
     public const char Identifier = '*';
 
-    private RedisArray(params RedisType[] elements)
+    private RedisArray(params RedisValue[] elements)
     {
         Values = elements.ToList();
     }
 
-    public IList<RedisType> Values { get; }
+    public IList<RedisValue> Values { get; }
 
-    public static (RedisType, int) Deserialize(byte[] data, int offset)
+    public static (RedisValue, int) Deserialize(byte[] data, int offset)
     {
         RedisArray result = new();
         var numElementsIndexEnd = Array.IndexOf(data, (byte)'\r', offset);
@@ -23,7 +23,7 @@ public class RedisArray : RedisType, IEnumerable<RedisType>
         offset = numElementsIndexEnd + 2;
         for (var i = 0; i < numElements; i++)
         {
-            (RedisType elem, int nextArrayOffset) = RedisType.Deserialize<RedisType>(data, offset);
+            (RedisValue elem, int nextArrayOffset) = RedisValue.Deserialize<RedisValue>(data, offset);
             result.Values.Add(elem);
             offset = nextArrayOffset;
         }
@@ -36,7 +36,7 @@ public class RedisArray : RedisType, IEnumerable<RedisType>
         var sb = new StringBuilder();
         sb.Append($"*{Values!.Count}");
         sb.Append("\r\n");
-        foreach (RedisType value in Values)
+        foreach (RedisValue value in Values)
         {
             byte[] array = value.Serialize();
             sb.Append(Encoding.ASCII.GetString(array));
@@ -44,14 +44,14 @@ public class RedisArray : RedisType, IEnumerable<RedisType>
         return Encoding.ASCII.GetBytes(sb.ToString());
     }
 
-    public static RedisArray From(params RedisType[] elements) => new(elements);
+    public static RedisArray From(params RedisValue[] elements) => new(elements);
 
-    public RedisType this[int index]
+    public RedisValue this[int index]
     {
         get { return Values[index]; }
     }
 
-    public IEnumerator<RedisType> GetEnumerator()
+    public IEnumerator<RedisValue> GetEnumerator()
     {
         return Values.GetEnumerator();
     }

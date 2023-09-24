@@ -2,7 +2,7 @@ using System.Text;
 
 namespace Lesniak.Redis.Communication.Network.Types;
 
-public class RedisErrorString : RedisType
+public class RedisErrorString : RedisValue
 {
     const char Identifier = '-';
     private readonly string _value;
