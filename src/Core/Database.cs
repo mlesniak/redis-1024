@@ -41,8 +41,11 @@ public class Database : IDatabaseManagement, IDatabase
             new List<AsyncMessageReceiver> { receiver },
             (_, current) =>
             {
-                // TODO(mlesniak) concurrency-safe list
-                current.Add(receiver);
+                lock (current)
+                {
+                    current.Add(receiver);
+                }
+
                 return current;
             }
         );
@@ -62,7 +65,10 @@ public class Database : IDatabaseManagement, IDatabase
             return;
         }
 
-        receivers.Remove(receiver);
+        lock (receivers)
+        {
+            receivers.Remove(receiver);
+        }
     }
     // -----
 
