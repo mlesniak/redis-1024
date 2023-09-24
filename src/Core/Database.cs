@@ -35,7 +35,7 @@ public class Database : IDatabaseManagement, IDatabase
         return receivers.Count;
     }
 
-    public void Subscribe(string channel, AsyncMessageReceiver receiver)
+    public int Subscribe(string channel, AsyncMessageReceiver receiver)
     {
         _subscriptions.AddOrUpdate(channel,
             new List<AsyncMessageReceiver> { receiver },
@@ -43,10 +43,16 @@ public class Database : IDatabaseManagement, IDatabase
             {
                 // TODO(mlesniak) concurrency-safe list
                 current.Add(receiver);
-
                 return current;
             }
         );
+        if (_subscriptions.TryGetValue(channel, out List<AsyncMessageReceiver> receivers))
+        {
+            return receivers.Count;
+        }
+
+        log.LogWarning("Unable to get channel to recently subscribed {Channel}", channel);
+        return 1;
     }
 
     public void Unsubscribe(string channel, AsyncMessageReceiver receiver)

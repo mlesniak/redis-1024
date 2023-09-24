@@ -10,9 +10,7 @@ namespace Lesniak.Redis.Communication.Network;
 /// </summary>
 public class ClientContext
 {
-    public int NumSubscriptions { get; set; }
-
     public string ClientId { get; } = Guid.NewGuid().ToString();
-
+    public int NumSubscriptions { get; set; }
     public Action<byte[]> SendToClient { get; init; }
 }

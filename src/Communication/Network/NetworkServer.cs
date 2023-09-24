@@ -49,7 +49,18 @@ public class NetworkServer
             // Used as a backchannel to send data to the client for
             // asynchronous operations, such as a response to a
             // subscription.
-            SendToClient = (bytes) => stream.Write(bytes, 0, bytes.Length)
+            SendToClient = (bytes) =>
+            {
+                // In RESP2, no other commands than subscribe and 
+                // unsubscribe are allowed from the client. We allow
+                // more freedom, but therefore have to take care
+                // that we are not intermixing responses from 
+                // different streams.
+                lock (stream)
+                {
+                    stream.Write(bytes, 0, bytes.Length);
+                }
+            }
         };
         try
         {
@@ -57,7 +68,10 @@ public class NetworkServer
             while (NetworkUtils.Read(stream, Configuration.Get().MaxReadBuffer) is { } readBytes)
             {
                 var response = _clientHandler.Handle(ctx, readBytes);
-                stream.Write(response, 0, response.Length);
+                lock (stream)
+                {
+                    stream.Write(response, 0, response.Length);
+                }
             }
 
             log.LogInformation("Client {Id} disconnected", ctx.ClientId);

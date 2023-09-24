@@ -7,6 +7,6 @@ public interface IDatabase
     void Remove(string key);
 
     int Publish(string channel, byte[] message);
-    void Subscribe(string channel, Database.AsyncMessageReceiver receiver);
+    int Subscribe(string channel, Database.AsyncMessageReceiver receiver);
     void Unsubscribe(string channel, Database.AsyncMessageReceiver receiver);
 }

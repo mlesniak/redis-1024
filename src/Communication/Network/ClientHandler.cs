@@ -32,7 +32,10 @@ public class ClientHandler
             offset = nextOffset;
         }
 
-        return responses.ToArray();
+        byte[] handle = responses.ToArray();
+        var o = Encoding.ASCII.GetString(handle);
+        Console.WriteLine(o);
+        return handle;
     }
 
     byte[] ExecuteCommand(ClientContext ctx, RedisArray commandline)
@@ -49,7 +52,7 @@ public class ClientHandler
             "echo" => EchoHandler(arguments),
             "subscribe" => SubscribeHandler(ctx, arguments),
             "publish" => PublishHandler(arguments),
-            _ => UnknownCommandHandler()
+            _ => UnknownCommandHandler(arguments)
         };
 
         return result.Serialize();
@@ -64,17 +67,26 @@ public class ClientHandler
         return RedisNumber.From(sendTo);
     }
 
-    // TODO(mlesniak) support multiple channel per single subscription
     private RedisType SubscribeHandler(ClientContext ctx, List<RedisType> arguments)
     {
-        var channel = ((RedisBulkString)arguments[0]).ToAsciiString();
-        _database.Subscribe(channel, ResponseAction);
-        ctx.NumSubscriptions++;
-        return RedisArray.From(
-            RedisBulkString.From("subscribe"),
-            RedisBulkString.From(((RedisBulkString)arguments[0]).Value!),
-            RedisNumber.From(ctx.NumSubscriptions)
-        );
+        List<(string, int)> subscriberCounts = new();
+        foreach (var ch in arguments)
+        {
+            var channel = ((RedisBulkString)ch).ToAsciiString();
+            var subscribers = _database.Subscribe(channel, ResponseAction);
+            subscriberCounts.Add((channel, subscribers));
+        }
+
+        var response = subscriberCounts
+            .SelectMany(tuple =>
+                new RedisType[]
+                {
+                    RedisBulkString.From(tuple.Item1),
+                    RedisNumber.From(tuple.Item2)
+                })
+            .Prepend(RedisBulkString.From("subscribe"))
+            .ToArray();
+        return RedisArray.From(response);
 
         void ResponseAction(string c, byte[] message)
         {
@@ -126,8 +138,14 @@ public class ClientHandler
             : RedisBulkString.From(resultBytes);
     }
 
-    private RedisType UnknownCommandHandler()
+    private RedisType UnknownCommandHandler(List<RedisType> arguments)
     {
-        return RedisErrorString.From("ERR UNKNOWN COMMAND");
+        var command = "";
+        if (arguments.Count > 0)
+        {
+            command = ((RedisBulkString)arguments[0]).ToAsciiString();
+        }
+
+        return RedisErrorString.From($"ERR UNKNOWN COMMAND {command}");
     }
 }
