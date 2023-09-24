@@ -4,7 +4,7 @@ namespace Lesniak.Redis.Communication.Network;
 
 public abstract class NetworkUtils
 {
-    public static async Task<byte[]?> ReadAsync(NetworkStream networkStream, int maxBuffer)
+    public static byte[]? Read(NetworkStream networkStream, int maxBuffer)
     {
         const int bufferSize = 1024;
 
@@ -12,7 +12,7 @@ public abstract class NetworkUtils
         using MemoryStream memoryStream = new();
 
         int bytesRead;
-        while ((bytesRead = await networkStream.ReadAsync(buffer, 0, buffer.Length)) > 0)
+        while ((bytesRead = networkStream.Read(buffer, 0, buffer.Length)) > 0)
         {
             memoryStream.Write(buffer, 0, bytesRead);
             if (!networkStream.DataAvailable)

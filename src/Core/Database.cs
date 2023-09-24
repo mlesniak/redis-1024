@@ -15,8 +15,12 @@ public class Database : IDatabaseManagement, IDatabase
     private static readonly ILogger log = Logging.For<Database>();
 
     // -----
+    // TODO(mlesniak) unsubscribe from everything?
+    // TODO(mlesniak) error handling on publish
     public delegate void AsyncMessageReceiver(string channel, byte[] message);
+
     private readonly ConcurrentDictionary<string, List<AsyncMessageReceiver>> _subscriptions = new();
+
     public void Publish(string channel, byte[] message)
     {
         if (!_subscriptions.TryGetValue(channel, out List<AsyncMessageReceiver>? receivers))
