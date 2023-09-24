@@ -14,6 +14,7 @@ public class Database : IDatabaseManagement, IDatabase
 {
     private static readonly ILogger log = Logging.For<Database>();
 
+    // TODO(mlesniak) move this to proper place
     // -----
     public delegate void AsyncMessageReceiver(string channel, byte[] message);
 
