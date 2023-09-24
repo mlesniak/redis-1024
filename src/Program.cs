@@ -59,26 +59,15 @@ class Program
         var server = _serviceProvider.GetRequiredService<NetworkServer>();
         var database = _serviceProvider.GetRequiredService<IDatabase>();
 
-        // TODO(mlesniak) find proper place and explain
+        // __Booksleeve_TieBreak is a key used by the BookSleeve Redis
+        // client library for .NET. It's used to conduct a tie-break
+        // when deciding which master to promote in a Redis master-
+        // slave setup. The tie-break decision is based on the time
+        // at which the key was set.
+        //
+        // Libraries check if the key exits on connecting.
         database.Set("__Booksleeve_TieBreak", "OK"u8.ToArray());
 
         server.Start();
-    }
-
-    async Task Test()
-    {
-        var database = _serviceProvider.GetRequiredService<IDatabase>();
-        var databaseManagement = _serviceProvider.GetRequiredService<IDatabaseManagement>();
-        var value = database.Get("michael");
-        if (value != null)
-        {
-            Console.WriteLine("key = {0}", Encoding.ASCII.GetString(value));
-        }
-        else
-        {
-            database.Set("michael", "foo"u8.ToArray());
-        }
-
-        await Task.Delay(8000);
     }
 }
