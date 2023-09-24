@@ -17,28 +17,26 @@ public class Database : IDatabaseManagement, IDatabase
     // -----
     public delegate void AsyncMessageReceiver(string channel, byte[] message);
 
-    private readonly ConcurrentDictionary<string, List<AsyncMessageReceiver>> _subscriptions = new();
+    private readonly ConcurrentDictionary<string, List<Tuple<string, AsyncMessageReceiver>>> _subscriptions = new();
     private readonly ConcurrentDictionary<string, AsyncMessageReceiver> _clientReceivers = new();
 
     public int Publish(string channel, byte[] message)
     {
-        if (!_subscriptions.TryGetValue(channel, out List<AsyncMessageReceiver>? receivers))
+        if (!_subscriptions.TryGetValue(channel, out List<Tuple<string, AsyncMessageReceiver>>? receivers))
         {
             return 0;
         }
 
         for (int i = receivers.Count - 1; i >= 0; i--)
         {
-            AsyncMessageReceiver receiver = receivers[i];
+            AsyncMessageReceiver receiver = receivers[i].Item2;
             try
             {
                 receiver.Invoke(channel, message);
             }
             catch (Exception e)
             {
-                // This won't work.
-                receivers.Remove(receiver);
-                Console.WriteLine($"XXX {nameof(e)}");
+                receivers.RemoveAt(i);
             }
         }
         return receivers.Count;
@@ -46,39 +44,59 @@ public class Database : IDatabaseManagement, IDatabase
 
     public int Subscribe(string clientId, string channel, AsyncMessageReceiver receiver)
     {
+        log.LogDebug("{ClientId}: Adding subscription to {Channel}", clientId, channel);
         _clientReceivers[clientId] = receiver;
+        var tuple = Tuple.Create(clientId, receiver);
         _subscriptions.AddOrUpdate(channel,
-            new List<AsyncMessageReceiver> { receiver },
+            new List<Tuple<string, AsyncMessageReceiver>> { tuple },
             (_, current) =>
             {
                 lock (current)
                 {
-                    current.Add(receiver);
+                    current.Add(tuple);
                 }
 
                 return current;
             }
         );
-        if (_subscriptions.TryGetValue(channel, out List<AsyncMessageReceiver>? receivers))
+
+        if (_subscriptions.TryGetValue(channel, out List<Tuple<string, AsyncMessageReceiver>>? receivers))
         {
             return receivers.Count;
         }
 
-        log.LogWarning("Unable to get channel to recently subscribed {Channel}", channel);
+        log.LogWarning("Unable to get info about recently subscribed {Channel}", channel);
         return 1;
+    }
+
+    public IEnumerable<string> UnsubscribeAll(string clientId)
+    {
+        var receiver = _clientReceivers[clientId];
+        return _subscriptions
+            .Select(pair =>
+            {
+                log.LogInformation("Examining channel {Channel}", pair.Key);
+                if (pair.Value.RemoveAll(x => x.Item1 == clientId) > 0)
+                {
+                    log.LogDebug("For {ClientId}: Removing subscription to {Channel}", clientId, pair.Key);
+                    return pair.Key;
+                }
+                return null;
+            })
+            .Where(k => k != null)
+            .ToList() as List<string>;
     }
 
     public void Unsubscribe(string clientId, string channel)
     {
         var receiver = _clientReceivers[clientId];
-        if (!_subscriptions.TryGetValue(channel, out List<AsyncMessageReceiver>? receivers))
+        if (!_subscriptions.TryGetValue(channel, out List<Tuple<string, AsyncMessageReceiver>>? receivers))
         {
             return;
         }
-
         lock (receivers)
         {
-            receivers.Remove(receiver);
+            receivers.RemoveAll(x => x.Item1 == clientId);
         }
     }
     // -----

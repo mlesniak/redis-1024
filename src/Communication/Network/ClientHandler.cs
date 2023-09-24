@@ -56,15 +56,22 @@ public class ClientHandler
         return result.Serialize();
     }
 
-    // TODO(mlesniak) unsubscribe from all
     private RedisType UnsubscribeHandler(ClientContext ctx, List<RedisType> arguments)
     {
         List<string> unsubscribedFrom = new();
-        foreach (var ch in arguments)
+
+        if (arguments.Count > 0)
         {
-            var channel = ((RedisBulkString)ch).ToAsciiString();
-            _database.Unsubscribe(ctx.ClientId, channel);
-            unsubscribedFrom.Add(channel);
+            foreach (var ch in arguments)
+            {
+                var channel = ((RedisBulkString)ch).ToAsciiString();
+                _database.Unsubscribe(ctx.ClientId, channel);
+                unsubscribedFrom.Add(channel);
+            }
+        }
+        else
+        {
+            unsubscribedFrom.AddRange(_database.UnsubscribeAll(ctx.ClientId));
         }
 
         var response = unsubscribedFrom
