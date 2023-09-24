@@ -11,7 +11,6 @@ using Microsoft.Extensions.Logging;
 
 namespace Lesniak.Redis;
 
-// TODO(mlesniak) Add support for channels?
 class Program
 {
     private static ILogger log = Logging.For<Program>();
