@@ -19,7 +19,6 @@ public class Database : IDatabaseManagement, IDatabase
     public delegate void AsyncMessageReceiver(string channel, byte[] message);
 
     private readonly ConcurrentDictionary<string, List<Tuple<string, AsyncMessageReceiver>>> _subscriptions = new();
-    private readonly ConcurrentDictionary<string, AsyncMessageReceiver> _clientReceivers = new();
 
     public int Publish(string channel, byte[] message)
     {
@@ -46,7 +45,6 @@ public class Database : IDatabaseManagement, IDatabase
     public int Subscribe(string clientId, string channel, AsyncMessageReceiver receiver)
     {
         log.LogDebug("{ClientId}: Adding subscription to {Channel}", clientId, channel);
-        _clientReceivers[clientId] = receiver;
         var tuple = Tuple.Create(clientId, receiver);
         _subscriptions.AddOrUpdate(channel,
             new List<Tuple<string, AsyncMessageReceiver>> { tuple },
@@ -72,7 +70,6 @@ public class Database : IDatabaseManagement, IDatabase
 
     public IEnumerable<string> UnsubscribeAll(string clientId)
     {
-        var receiver = _clientReceivers[clientId];
         return _subscriptions
             .Select(pair =>
             {
@@ -90,7 +87,6 @@ public class Database : IDatabaseManagement, IDatabase
 
     public void Unsubscribe(string clientId, string channel)
     {
-        var receiver = _clientReceivers[clientId];
         if (!_subscriptions.TryGetValue(channel, out List<Tuple<string, AsyncMessageReceiver>>? receivers))
         {
             return;
