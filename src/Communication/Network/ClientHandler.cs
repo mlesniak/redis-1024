@@ -45,15 +45,14 @@ public class ClientHandler
         // TODO(mlesniak) select method
         RedisValue result = command switch
         {
-            // TODO(mlesniak) every method shall be passed ctx and arguments
             // TODO(mlesniak) Add AUTH command
-            "set" => SetHandler(arguments),
-            "get" => GetHandler(arguments),
-            "echo" => EchoHandler(arguments),
+            "set" => SetHandler(ctx, arguments),
+            "get" => GetHandler(ctx, arguments),
+            "echo" => EchoHandler(ctx, arguments),
             "subscribe" => SubscribeHandler(ctx, arguments),
             "unsubscribe" => UnsubscribeHandler(ctx, arguments),
-            "publish" => PublishHandler(arguments),
-            _ => UnknownCommandHandler(arguments)
+            "publish" => PublishHandler(ctx, arguments),
+            _ => UnknownCommandHandler(ctx, arguments)
         };
 
         // TODO(mlesniak) check if the method needs authentication and if authentication is present 
@@ -86,7 +85,7 @@ public class ClientHandler
         return RedisArray.From(response);
     }
 
-    private RedisValue PublishHandler(List<RedisValue> arguments)
+    private RedisValue PublishHandler(ClientContext clientContext, List<RedisValue> arguments)
     {
         var channel = ((RedisBulkString)arguments[0]).ToAsciiString();
         var message = ((RedisBulkString)arguments[1]).Value!;
@@ -128,13 +127,13 @@ public class ClientHandler
         }
     }
 
-    private RedisValue EchoHandler(List<RedisValue> arguments)
+    private RedisValue EchoHandler(ClientContext clientContext, List<RedisValue> arguments)
     {
         var response = ((RedisBulkString)arguments[0]).Value!;
         return RedisBulkString.From(response);
     }
 
-    private RedisValue SetHandler(IReadOnlyList<RedisValue> arguments)
+    private RedisValue SetHandler(ClientContext clientContext, IReadOnlyList<RedisValue> arguments)
     {
         var setKey = ((RedisBulkString)arguments[0]).ToAsciiString();
         byte[] value = ((RedisBulkString)arguments[1]).Value!;
@@ -157,7 +156,7 @@ public class ClientHandler
         return RedisSimpleString.From("OK");
     }
 
-    private RedisValue GetHandler(IReadOnlyList<RedisValue> arguments)
+    private RedisValue GetHandler(ClientContext clientContext, IReadOnlyList<RedisValue> arguments)
     {
         var getKey = ((RedisBulkString)arguments[0]).ToAsciiString();
         var resultBytes = _database.Get(getKey);
@@ -166,7 +165,7 @@ public class ClientHandler
             : RedisBulkString.From(resultBytes);
     }
 
-    private RedisValue UnknownCommandHandler(List<RedisValue> arguments)
+    private RedisValue UnknownCommandHandler(ClientContext clientContext, List<RedisValue> arguments)
     {
         var command = "";
         if (arguments.Count > 0)
