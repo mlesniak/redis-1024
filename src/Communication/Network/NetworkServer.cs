@@ -25,6 +25,8 @@ public class NetworkServer
 
     public void Start()
     {
+        // TODO(mlesniak) load config file
+        // TODO(mlesniak) initialize authentication (can be null)
         log.LogInformation("Server starting on {Port}", _port);
         _server.Start();
 

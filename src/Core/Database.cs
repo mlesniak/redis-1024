@@ -12,6 +12,9 @@ public delegate void DatabaseUpdated();
 // ReSharper disable once RedundantExtendsListEntry
 public class Database : IDatabaseManagement, IDatabase
 {
+    // TODO(mlesniak) Allow to set password
+    // TODO(mlesniak) Allow to verify if password is correct
+
     private static readonly ILogger log = Logging.For<Database>();
     private readonly ConcurrentDictionary<string, List<Tuple<string, AsyncMessageReceiver>>> _subscriptions = new();
     private readonly ConcurrentDictionary<string, DatabaseValue> _storage = new();

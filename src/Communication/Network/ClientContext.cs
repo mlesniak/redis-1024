@@ -11,6 +11,9 @@ namespace Lesniak.Redis.Communication.Network;
 public class ClientContext
 {
     public string ClientId { get; } = Guid.NewGuid().ToString();
+    // TODO(mlesniak) cleanup
     public int NumSubscriptions { get; set; }
     public Action<byte[]> SendToClient { get; init; }
+
+    // TODO(mlesniak) state if client is authenticated
 }

@@ -11,6 +11,9 @@ using Microsoft.Extensions.Logging;
 
 namespace Lesniak.Redis;
 
+// TODO(mlesniak) Add support for AUTH command.
+// TODO(mlesniak) Proper client-based testing
+// TODO(mlesniak) Proper testsuite
 class Program
 {
     private static ILogger log = Logging.For<Program>();

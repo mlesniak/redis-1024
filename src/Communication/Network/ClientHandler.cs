@@ -42,8 +42,11 @@ public class ClientHandler
         var command = Encoding.ASCII.GetString(rs).ToLower();
         var arguments = parts.Skip(1).ToList();
 
+        // TODO(mlesniak) select method
         RedisValue result = command switch
         {
+            // TODO(mlesniak) every method shall be passed ctx and arguments
+            // TODO(mlesniak) Add AUTH command
             "set" => SetHandler(arguments),
             "get" => GetHandler(arguments),
             "echo" => EchoHandler(arguments),
@@ -52,6 +55,8 @@ public class ClientHandler
             "publish" => PublishHandler(arguments),
             _ => UnknownCommandHandler(arguments)
         };
+
+        // TODO(mlesniak) check if the method needs authentication and if authentication is present 
 
         return result.Serialize();
     }
