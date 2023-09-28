@@ -136,6 +136,7 @@ public class ClientHandler
         }
     }
 
+    [RequiresAuthentication] // TODO(mlesniak) remove this
     private RedisValue EchoHandler(ClientContext clientContext, List<RedisValue> arguments)
     {
         var response = ((RedisBulkString)arguments[0]).Value!;
