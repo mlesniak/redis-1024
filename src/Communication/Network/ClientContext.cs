@@ -12,6 +12,5 @@ public class ClientContext
 {
     public string ClientId { get; } = Guid.NewGuid().ToString();
     public Action<byte[]> SendToClient { get; init; }
-
-    // TODO(mlesniak) state if client is authenticated
+    public bool Authenticated { get; set; } = false;
 }
