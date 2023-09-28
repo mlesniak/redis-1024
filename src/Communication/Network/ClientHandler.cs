@@ -42,21 +42,20 @@ public class ClientHandler
         var command = Encoding.ASCII.GetString(rs).ToLower();
         var arguments = parts.Skip(1).ToList();
 
-        // TODO(mlesniak) select method
-        RedisValue result = command switch
+        // TODO(mlesniak) check if the method needs authentication and if authentication is present 
+        Func<ClientContext, List<RedisValue>, RedisValue> method = command switch
         {
             // TODO(mlesniak) Add AUTH command
-            "set" => SetHandler(ctx, arguments),
-            "get" => GetHandler(ctx, arguments),
-            "echo" => EchoHandler(ctx, arguments),
-            "subscribe" => SubscribeHandler(ctx, arguments),
-            "unsubscribe" => UnsubscribeHandler(ctx, arguments),
-            "publish" => PublishHandler(ctx, arguments),
-            _ => UnknownCommandHandler(ctx, arguments)
+            "set" => SetHandler,
+            "get" => GetHandler,
+            "echo" => EchoHandler,
+            "subscribe" => SubscribeHandler,
+            "unsubscribe" => UnsubscribeHandler,
+            "publish" => PublishHandler,
+            _ => UnknownCommandHandler
         };
 
-        // TODO(mlesniak) check if the method needs authentication and if authentication is present 
-
+        RedisValue result = method.Invoke(ctx, arguments);
         return result.Serialize();
     }
 
