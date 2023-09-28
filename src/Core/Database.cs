@@ -214,4 +214,5 @@ public class Database : IDatabaseManagement, IDatabase
         return _password == password;
     }
 
+    public bool AuthenticationRequired => _password != null;
 }

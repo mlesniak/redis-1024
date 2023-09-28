@@ -59,7 +59,7 @@ public class ClientHandler
         };
 
         var attributes = method.Method.GetCustomAttributes(typeof(RequiresAuthentication), false);
-        if (attributes.Length > 0 && !ctx.Authenticated)
+        if (_database.AuthenticationRequired && attributes.Length > 0 && !ctx.Authenticated)
         {
             return RedisErrorString.From("Authentication needed. Use AUTH command").Serialize();
         }
