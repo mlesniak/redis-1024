@@ -9,6 +9,10 @@ using Microsoft.Extensions.Logging;
 
 namespace Lesniak.Redis.Communication.Network;
 
+[AttributeUsage(AttributeTargets.Method)]
+public class RequiresAuthentication : Attribute
+{ }
+
 public class ClientHandler
 {
     private static readonly ILogger log = Logging.For<ClientHandler>();
@@ -54,6 +58,12 @@ public class ClientHandler
             "publish" => PublishHandler,
             _ => UnknownCommandHandler
         };
+
+        var attributes = method.Method.GetCustomAttributes(typeof(RequiresAuthentication), false);
+        if (attributes.Length > 0 && !ctx.Authenticated)
+        {
+            return RedisErrorString.From("Authentication needed. Use AUTH command").Serialize();
+        }
 
         RedisValue result = method.Invoke(ctx, arguments);
         return result.Serialize();
