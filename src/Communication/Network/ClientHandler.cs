@@ -48,7 +48,7 @@ public class ClientHandler
 
         Func<ClientContext, List<RedisValue>, RedisValue> method = command switch
         {
-            // TODO(mlesniak) Add AUTH command
+            "auth" => AuthHandler,
             "set" => SetHandler,
             "get" => GetHandler,
             "echo" => EchoHandler,
@@ -68,6 +68,7 @@ public class ClientHandler
         return result.Serialize();
     }
 
+    [RequiresAuthentication] 
     private RedisValue UnsubscribeHandler(ClientContext ctx, List<RedisValue> arguments)
     {
         List<string> unsubscribedFrom = new();
@@ -93,7 +94,8 @@ public class ClientHandler
         return RedisArray.From(response);
     }
 
-    private RedisValue PublishHandler(ClientContext clientContext, List<RedisValue> arguments)
+    [RequiresAuthentication] 
+    private RedisValue PublishHandler(ClientContext ctx, List<RedisValue> arguments)
     {
         var channel = ((RedisBulkString)arguments[0]).ToAsciiString();
         var message = ((RedisBulkString)arguments[1]).Value!;
@@ -102,6 +104,7 @@ public class ClientHandler
         return RedisNumber.From(sendTo);
     }
 
+    [RequiresAuthentication] 
     private RedisValue SubscribeHandler(ClientContext ctx, List<RedisValue> arguments)
     {
         List<(string, int)> subscriberCounts = new();
@@ -135,14 +138,28 @@ public class ClientHandler
         }
     }
 
-    [RequiresAuthentication] // TODO(mlesniak) remove this
-    private RedisValue EchoHandler(ClientContext clientContext, List<RedisValue> arguments)
+    private RedisValue EchoHandler(ClientContext ctx, List<RedisValue> arguments)
     {
         var response = ((RedisBulkString)arguments[0]).Value!;
         return RedisBulkString.From(response);
     }
 
-    private RedisValue SetHandler(ClientContext clientContext, IReadOnlyList<RedisValue> arguments)
+    // Remark: the password is submitted in cleartext. Implementing or adding
+    // any form of transport encryption would blow up the whole project, though.
+    private RedisValue AuthHandler(ClientContext ctx, List<RedisValue> arguments)
+    {
+        var password = ((RedisBulkString)arguments[0]).ToAsciiString();
+        if (_database.VerifyPassword(password))
+        {
+            ctx.Authenticated = true;
+            return RedisSimpleString.From("OK");
+        }
+
+        return RedisErrorString.From("invalid password");
+    }
+
+    [RequiresAuthentication] 
+    private RedisValue SetHandler(ClientContext ctx, IReadOnlyList<RedisValue> arguments)
     {
         var setKey = ((RedisBulkString)arguments[0]).ToAsciiString();
         byte[] value = ((RedisBulkString)arguments[1]).Value!;
@@ -165,7 +182,8 @@ public class ClientHandler
         return RedisSimpleString.From("OK");
     }
 
-    private RedisValue GetHandler(ClientContext clientContext, IReadOnlyList<RedisValue> arguments)
+    [RequiresAuthentication] 
+    private RedisValue GetHandler(ClientContext ctx, IReadOnlyList<RedisValue> arguments)
     {
         var getKey = ((RedisBulkString)arguments[0]).ToAsciiString();
         var resultBytes = _database.Get(getKey);
@@ -174,7 +192,7 @@ public class ClientHandler
             : RedisBulkString.From(resultBytes);
     }
 
-    private RedisValue UnknownCommandHandler(ClientContext clientContext, List<RedisValue> arguments)
+    private RedisValue UnknownCommandHandler(ClientContext ctx, List<RedisValue> arguments)
     {
         var command = "";
         if (arguments.Count > 0)

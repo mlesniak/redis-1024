@@ -14,6 +14,7 @@ namespace Lesniak.Redis;
 // TODO(mlesniak) Add support for AUTH command.
 // TODO(mlesniak) Proper client-based testing
 // TODO(mlesniak) Proper testsuite
+// TODO(mlesniak) Documentation
 class Program
 {
     private static ILogger log = Logging.For<Program>();
