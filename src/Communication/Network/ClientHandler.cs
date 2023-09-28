@@ -46,7 +46,6 @@ public class ClientHandler
         var command = Encoding.ASCII.GetString(rs).ToLower();
         var arguments = parts.Skip(1).ToList();
 
-        // TODO(mlesniak) check if the method needs authentication and if authentication is present 
         Func<ClientContext, List<RedisValue>, RedisValue> method = command switch
         {
             // TODO(mlesniak) Add AUTH command
