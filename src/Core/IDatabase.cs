@@ -10,4 +10,5 @@ public interface IDatabase
     int Subscribe(string clientId, string channel, Database.AsyncMessageReceiver receiver);
     void Unsubscribe(string clientId, string channel);
     IEnumerable<string> UnsubscribeAll(string clientId);
+    bool VerifyPassword(string password);
 }

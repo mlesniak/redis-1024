@@ -12,9 +12,6 @@ public delegate void DatabaseUpdated();
 // ReSharper disable once RedundantExtendsListEntry
 public class Database : IDatabaseManagement, IDatabase
 {
-    // TODO(mlesniak) Allow to set password
-    // TODO(mlesniak) Allow to verify if password is correct
-
     private static readonly ILogger log = Logging.For<Database>();
     private readonly ConcurrentDictionary<string, List<Tuple<string, AsyncMessageReceiver>>> _subscriptions = new();
     private readonly ConcurrentDictionary<string, DatabaseValue> _storage = new();
@@ -26,6 +23,8 @@ public class Database : IDatabaseManagement, IDatabase
     // periodic persistence job, which is why we use a write lock
     // for that. Hence, the name is a bit misleading.
     private readonly ReaderWriterLockSlim _writeLock = new();
+    private string? _password;
+
     public event DatabaseUpdated? DatabaseUpdates;
     
     public delegate void AsyncMessageReceiver(string channel, byte[] message);
@@ -200,4 +199,19 @@ public class Database : IDatabaseManagement, IDatabase
             receivers.RemoveAll(x => x.Item1 == clientId);
         }
     }
+    
+    public void SetPassword(string password)
+    {
+        _password = password;
+    }
+
+    public bool VerifyPassword(string password)
+    {
+        if (_password == null)
+        {
+            return true;
+        }
+        return _password == password;
+    }
+
 }
