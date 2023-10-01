@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics;
+using System.Globalization;
 
 using StackExchange.Redis;
 
@@ -8,23 +9,25 @@ Trace.Listeners.Add(new TextWriterTraceListener(traceWriter));
 
 try
 {
-    ConfigurationOptions options = new ConfigurationOptions { EndPoints = { "localhost" }, SyncTimeout = 5000 };
+    ConfigurationOptions options = new() { EndPoints = { "localhost" }, SyncTimeout = 5000, Password = "foo"};
     ConnectionMultiplexer redis = ConnectionMultiplexer.Connect(options, traceWriter);
 
-    // IDatabase db = redis.GetDatabase();
-    // string key = "current";
-    // db.StringSet(key, DateTime.Now.ToString(CultureInfo.CurrentCulture));
-    // string? value = db.StringGet(key);
-    // Console.WriteLine($"Value: {value}");
+    // Store and retrieve a key.
+    IDatabase db = redis.GetDatabase();
+    string key = "current";
+    db.StringSet(key, DateTime.Now.ToString(CultureInfo.CurrentCulture));
+    string? value = db.StringGet(key);
+    Console.WriteLine($"Value: {value}");
 
+    // Publish and subscribe.
     ISubscriber sub = redis.GetSubscriber();
-    sub.Subscribe("foo", (channel, message) =>
+    sub.Subscribe("receiving", (channel, message) =>
     {
         Console.WriteLine($"Received message: {message} on channel: {channel}");
     });
     while (true)
     {
-        await Task.Delay(TimeSpan.FromSeconds(10));
+        await Task.Delay(TimeSpan.FromSeconds(1));
         sub.Publish("date", DateTime.Now.ToString());
     }
 }
@@ -32,5 +35,5 @@ catch (Exception e)
 {
     Console.WriteLine($"Exception: {e.Message}");
     Console.WriteLine(traceWriter.ToString());
-    throw;
+    Environment.Exit(1);
 }
