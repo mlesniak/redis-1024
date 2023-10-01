@@ -10,11 +10,13 @@ public class PersistenceJob : IJob
     private readonly IPersistenceProvider _persistenceProvider;
     private readonly IDatabaseManagement _database;
     private bool _dirty;
+    private readonly Configuration.JobConfiguration _configuration;
 
-    public PersistenceJob(IDatabaseManagement database, IPersistenceProvider persistenceProvider)
+    public PersistenceJob(Configuration configuration, IDatabaseManagement database, IPersistenceProvider persistenceProvider)
     {
         _database = database;
         _persistenceProvider = persistenceProvider;
+        _configuration = configuration.PersistenceJob;
         database.DatabaseUpdates += DatabaseUpdated;
     }
 
@@ -26,7 +28,7 @@ public class PersistenceJob : IJob
 
     public async Task Start()
     {
-        var delay = Configuration.Get().PersistenceJob.Interval;
+        var delay = _configuration.Interval;
         log.LogInformation("Starting persistence job, checking for write every {Delay}", delay);
         while (true)
         {

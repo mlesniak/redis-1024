@@ -17,11 +17,11 @@ public class JsonPersistence : IPersistenceProvider
     private readonly IDatabaseManagement _database;
     private readonly string _databaseName;
 
-    public JsonPersistence(IDateTimeProvider dateTimeProvider, IDatabaseManagement database)
+    public JsonPersistence(Configuration configuration, IDateTimeProvider dateTimeProvider, IDatabaseManagement database)
     {
         _dateTimeProvider = dateTimeProvider;
         _database = database;
-        _databaseName = Configuration.Get().DatabaseName;
+        _databaseName = configuration.DatabaseName;
     }
 
     public void Save()

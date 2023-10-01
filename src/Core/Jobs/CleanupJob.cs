@@ -9,9 +9,11 @@ public class CleanupJob : IJob
     private static readonly ILogger log = Logging.For<CleanupJob>();
     private readonly IDatabaseManagement _database;
     private readonly IDateTimeProvider _dateTimeProvider;
+    private readonly Configuration.JobConfiguration _configurationCleanupJob;
 
-    public CleanupJob(IDateTimeProvider dateTimeProvider, IDatabaseManagement database)
+    public CleanupJob(Configuration configuration, IDateTimeProvider dateTimeProvider, IDatabaseManagement database)
     {
+        _configurationCleanupJob = configuration.CleanupJob;
         _dateTimeProvider = dateTimeProvider;
         _database = database;
     }
@@ -39,7 +41,7 @@ public class CleanupJob : IJob
 
     public async Task Start()
     {
-        var delay = Configuration.Get().CleanupJob.Interval;
+        var delay = _configurationCleanupJob.Interval;
         log.LogInformation($"Starting cleanup job perdiodically every {delay}");
         while (true)
         {

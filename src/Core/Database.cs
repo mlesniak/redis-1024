@@ -29,10 +29,10 @@ public class Database : IDatabaseManagement, IDatabase
     
     public delegate void AsyncMessageReceiver(string channel, byte[] message);
 
-    public Database(IDateTimeProvider dateTimeProvider)
+    public Database(Configuration configuration, IDateTimeProvider dateTimeProvider)
     {
         _dateTimeProvider = dateTimeProvider;
-        _password = Configuration.Get().Password;
+        _password = configuration.Password;
     }
 
     public class DatabaseValue

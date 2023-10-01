@@ -161,6 +161,7 @@ public class ClientHandler
     [RequiresAuthentication] 
     private RedisValue SetHandler(ClientContext ctx, IReadOnlyList<RedisValue> arguments)
     {
+        // TODO(mlesniak) check number of parameters
         var setKey = ((RedisBulkString)arguments[0]).ToAsciiString();
         byte[] value = ((RedisBulkString)arguments[1]).Value!;
 

@@ -14,18 +14,18 @@ public class NetworkServer
 
     private readonly TcpListener _server;
     private readonly int _port;
+    private readonly int _maxReadBuffer;
 
-    public NetworkServer(ClientHandler clientHandler)
+    public NetworkServer(Configuration configuration, ClientHandler clientHandler)
     {
         _clientHandler = clientHandler;
-        _port = Configuration.Get().Port;
+        _port = configuration.Port;
+        _maxReadBuffer = configuration.MaxReadBuffer;
         _server = new TcpListener(IPAddress.Loopback, _port);
     }
 
     public void Start()
     {
-        // TODO(mlesniak) load config file
-        // TODO(mlesniak) initialize authentication (can be null)
         log.LogInformation("Server starting on {Port}", _port);
         _server.Start();
 
@@ -65,7 +65,7 @@ public class NetworkServer
         try
         {
             log.LogInformation("Client {Id} connected", ctx.ClientId);
-            while (NetworkUtils.Read(stream, Configuration.Get().MaxReadBuffer) is { } readBytes)
+            while (NetworkUtils.Read(stream, _maxReadBuffer) is { } readBytes)
             {
                 var response = _clientHandler.Handle(ctx, readBytes);
                 lock (stream)

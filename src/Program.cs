@@ -11,7 +11,6 @@ using Microsoft.Extensions.Logging;
 
 namespace Lesniak.Redis;
 
-// TODO(mlesniak) Add support for AUTH command.
 // TODO(mlesniak) Proper client-based testing
 // TODO(mlesniak) Proper testsuite
 // TODO(mlesniak) Documentation
@@ -23,6 +22,7 @@ class Program
     void AddServices()
     {
         _serviceProvider = new ServiceCollection()
+            .AddSingleton<Configuration>()
             .AddSingleton<IDateTimeProvider>(new DefaultDateTimeProvider())
             .AddSingleton<IDatabase, Database>()
             .AddSingleton<IDatabaseManagement>(sp => (IDatabaseManagement)sp.GetRequiredService<IDatabase>())

@@ -4,12 +4,12 @@ namespace Lesniak.Redis;
 
 public class Configuration
 {
-    public string DatabaseName { get; init; } = "database.json";
+    public string DatabaseName => "database.json";
     public int MaxReadBuffer { get; init; } = 1024 * 1024;
     public int Port { get; init; } = 6379;
     public string? Password { get; init; } = null;
     public JobConfiguration PersistenceJob { get; init; } = new();
-    public JobConfiguration CleanupJob { get; init; } = new();
+    public JobConfiguration CleanupJob { get; init;  } = new();
 
     public class JobConfiguration
     {
@@ -19,16 +19,14 @@ public class Configuration
     private static Configuration _singleton;
     private static IConfiguration _configuration;
 
-    static Configuration()
+    public Configuration()
     {
         var builder = new ConfigurationBuilder()
             .SetBasePath(Directory.GetCurrentDirectory())
             .AddJsonFile("appsettings.json", optional: true, reloadOnChange: false);
         _configuration = builder.Build();
-        _singleton = _configuration.Get<Configuration>() ?? new Configuration();
+        _configuration.Bind(this);
     }
-
-    public static Configuration Get() => _singleton;
 
     public static IConfiguration GetSection(string key) => _configuration.GetSection(key);
 
