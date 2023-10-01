@@ -32,6 +32,7 @@ public class Database : IDatabaseManagement, IDatabase
     public Database(IDateTimeProvider dateTimeProvider)
     {
         _dateTimeProvider = dateTimeProvider;
+        _password = Configuration.Get().Password;
     }
 
     public class DatabaseValue

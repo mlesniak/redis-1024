@@ -1,7 +1,6 @@
 using System.Net;
 using System.Net.Sockets;
 
-using Lesniak.Redis.Core;
 using Lesniak.Redis.Infrastructure;
 
 using Microsoft.Extensions.Logging;

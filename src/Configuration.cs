@@ -4,9 +4,10 @@ namespace Lesniak.Redis;
 
 public class Configuration
 {
+    public string DatabaseName { get; init; } = "database.json";
     public int MaxReadBuffer { get; init; } = 1024 * 1024;
     public int Port { get; init; } = 6379;
-    public string DatabaseName { get; init; } = "database.json";
+    public string? Password { get; init; } = null;
     public JobConfiguration PersistenceJob { get; init; } = new();
     public JobConfiguration CleanupJob { get; init; } = new();
 

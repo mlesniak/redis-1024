@@ -200,6 +200,6 @@ public class ClientHandler
             command = ((RedisBulkString)arguments[0]).ToAsciiString();
         }
 
-        return RedisErrorString.From($"ERR UNKNOWN COMMAND {command}");
+        return RedisErrorString.From($"UNKNOWN COMMAND {command}");
     }
 }
