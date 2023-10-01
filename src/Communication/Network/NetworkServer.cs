@@ -16,7 +16,7 @@ public class NetworkServer
 
     private readonly TcpListener _server;
 
-    public NetworkServer(Configuration configuration, ClientHandler clientHandler)
+    public NetworkServer(IConfiguration configuration, ClientHandler clientHandler)
     {
         _clientHandler = clientHandler;
         _port = configuration.Port;

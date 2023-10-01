@@ -29,7 +29,7 @@ public class Database : IDatabaseManagement, IDatabase
     private readonly ReaderWriterLockSlim _writeLock = new();
     private string? _password;
 
-    public Database(Configuration configuration, IDateTimeProvider dateTimeProvider)
+    public Database(IConfiguration configuration, IDateTimeProvider dateTimeProvider)
     {
         _dateTimeProvider = dateTimeProvider;
         _password = configuration.Password;

@@ -17,7 +17,7 @@ public class JsonPersistence : IPersistenceProvider
     private readonly string _databaseName;
     private readonly IDateTimeProvider _dateTimeProvider;
 
-    public JsonPersistence(Configuration configuration, IDateTimeProvider dateTimeProvider,
+    public JsonPersistence(IConfiguration configuration, IDateTimeProvider dateTimeProvider,
         IDatabaseManagement database)
     {
         _dateTimeProvider = dateTimeProvider;

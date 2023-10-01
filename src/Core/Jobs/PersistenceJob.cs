@@ -7,12 +7,12 @@ namespace Lesniak.Redis.Core.Jobs;
 public class PersistenceJob : IJob
 {
     private static readonly ILogger log = Logging.For<PersistenceJob>();
-    private readonly Configuration.JobConfiguration _configuration;
+    private readonly IConfiguration.JobConfiguration _configuration;
     private readonly IDatabaseManagement _database;
     private readonly IPersistenceProvider _persistenceProvider;
     private bool _dirty;
 
-    public PersistenceJob(Configuration configuration, IDatabaseManagement database,
+    public PersistenceJob(IConfiguration configuration, IDatabaseManagement database,
         IPersistenceProvider persistenceProvider)
     {
         _database = database;

@@ -20,7 +20,7 @@ internal class Program
     private void AddServices()
     {
         _serviceProvider = new ServiceCollection()
-            .AddSingleton<Configuration>()
+            .AddSingleton<IConfiguration, Configuration>()
             .AddSingleton<IDateTimeProvider>(new DefaultDateTimeProvider())
             .AddSingleton<IDatabase, Database>()
             .AddSingleton<IDatabaseManagement>(sp => (IDatabaseManagement)sp.GetRequiredService<IDatabase>())

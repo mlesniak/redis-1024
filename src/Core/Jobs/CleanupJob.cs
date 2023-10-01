@@ -7,11 +7,11 @@ namespace Lesniak.Redis.Core.Jobs;
 public class CleanupJob : IJob
 {
     private static readonly ILogger log = Logging.For<CleanupJob>();
-    private readonly Configuration.JobConfiguration _configurationCleanupJob;
+    private readonly IConfiguration.JobConfiguration _configurationCleanupJob;
     private readonly IDatabaseManagement _database;
     private readonly IDateTimeProvider _dateTimeProvider;
 
-    public CleanupJob(Configuration configuration, IDateTimeProvider dateTimeProvider, IDatabaseManagement database)
+    public CleanupJob(IConfiguration configuration, IDateTimeProvider dateTimeProvider, IDatabaseManagement database)
     {
         _configurationCleanupJob = configuration.CleanupJob;
         _dateTimeProvider = dateTimeProvider;

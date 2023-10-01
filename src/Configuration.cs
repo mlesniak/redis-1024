@@ -2,10 +2,10 @@ using Microsoft.Extensions.Configuration;
 
 namespace Lesniak.Redis;
 
-public class Configuration
+public class Configuration : IConfiguration
 {
     private static Configuration _singleton;
-    private static IConfiguration _configuration;
+    private static Microsoft.Extensions.Configuration.IConfiguration _configuration;
 
     public Configuration()
     {
@@ -20,10 +20,10 @@ public class Configuration
     public int MaxReadBuffer { get; init; } = 1024 * 1024;
     public int Port { get; init; } = 6379;
     public string? Password { get; init; } = null;
-    public JobConfiguration PersistenceJob { get; init; } = new();
-    public JobConfiguration CleanupJob { get; init; } = new();
+    public IConfiguration.JobConfiguration PersistenceJob { get; init; } = new();
+    public IConfiguration.JobConfiguration CleanupJob { get; init; } = new();
 
-    public static IConfiguration GetSection(string key)
+    public static Microsoft.Extensions.Configuration.IConfiguration GetSection(string key)
     {
         return _configuration.GetSection(key);
     }
@@ -31,10 +31,5 @@ public class Configuration
     public override string ToString()
     {
         return $"{nameof(MaxReadBuffer)}: {MaxReadBuffer}, {nameof(Port)}: {Port}";
-    }
-
-    public class JobConfiguration
-    {
-        public TimeSpan Interval { get; init; } = TimeSpan.FromMinutes(1);
     }
 }
