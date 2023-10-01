@@ -2,6 +2,7 @@ namespace Lesniak.Redis.Core;
 
 public interface IDatabase
 {
+    bool AuthenticationRequired { get; }
     void Set(string key, byte[] value, long? expiration = null);
     byte[]? Get(string key);
     void Remove(string key);
@@ -12,5 +13,4 @@ public interface IDatabase
     IEnumerable<string> UnsubscribeAll(string clientId);
 
     bool VerifyPassword(string password);
-    bool AuthenticationRequired { get;  }
 }

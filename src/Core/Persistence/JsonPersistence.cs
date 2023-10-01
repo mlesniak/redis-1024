@@ -13,11 +13,12 @@ namespace Lesniak.Redis.Core.Persistence;
 public class JsonPersistence : IPersistenceProvider
 {
     private static readonly ILogger log = Logging.For<PersistenceJob>();
-    private readonly IDateTimeProvider _dateTimeProvider;
     private readonly IDatabaseManagement _database;
     private readonly string _databaseName;
+    private readonly IDateTimeProvider _dateTimeProvider;
 
-    public JsonPersistence(Configuration configuration, IDateTimeProvider dateTimeProvider, IDatabaseManagement database)
+    public JsonPersistence(Configuration configuration, IDateTimeProvider dateTimeProvider,
+        IDatabaseManagement database)
     {
         _dateTimeProvider = dateTimeProvider;
         _database = database;
@@ -44,7 +45,7 @@ public class JsonPersistence : IPersistenceProvider
 
         // Serialize as JSON and write to disk.
         log.LogInformation("Persisting database to disk");
-        var json = JsonSerializer.Serialize(values);
+        string json = JsonSerializer.Serialize(values);
         File.WriteAllText(_databaseName, json);
     }
 
@@ -58,15 +59,15 @@ public class JsonPersistence : IPersistenceProvider
         log.LogInformation("Loading database from disk");
         _database.Clear();
 
-        var json = File.ReadAllText(_databaseName);
-        var dict = JsonSerializer.Deserialize<Dictionary<string, DatabaseValue>>(json)!;
+        string json = File.ReadAllText(_databaseName);
+        Dictionary<string, DatabaseValue>? dict = JsonSerializer.Deserialize<Dictionary<string, DatabaseValue>>(json)!;
         foreach (KeyValuePair<string, DatabaseValue> kv in dict)
         {
             DatabaseValue dbValue = kv.Value;
             int? expiration = null;
             if (dbValue.ExpirationDate != null)
             {
-                var x = (_dateTimeProvider.Now - dbValue.ExpirationDate!);
+                TimeSpan? x = _dateTimeProvider.Now - dbValue.ExpirationDate!;
                 expiration = x.Value.Milliseconds;
             }
 

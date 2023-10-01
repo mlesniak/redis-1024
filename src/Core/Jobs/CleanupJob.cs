@@ -7,9 +7,9 @@ namespace Lesniak.Redis.Core.Jobs;
 public class CleanupJob : IJob
 {
     private static readonly ILogger log = Logging.For<CleanupJob>();
+    private readonly Configuration.JobConfiguration _configurationCleanupJob;
     private readonly IDatabaseManagement _database;
     private readonly IDateTimeProvider _dateTimeProvider;
-    private readonly Configuration.JobConfiguration _configurationCleanupJob;
 
     public CleanupJob(Configuration configuration, IDateTimeProvider dateTimeProvider, IDatabaseManagement database)
     {
@@ -18,15 +18,26 @@ public class CleanupJob : IJob
         _database = database;
     }
 
+    public async Task Start()
+    {
+        TimeSpan delay = _configurationCleanupJob.Interval;
+        log.LogInformation($"Starting cleanup job perdiodically every {delay}");
+        while (true)
+        {
+            await Task.Delay(delay);
+            Run();
+        }
+    }
+
     /// <summary>
-    /// Removes all expired entries from the database.
+    ///     Removes all expired entries from the database.
     /// </summary>
     private void Run()
     {
         log.LogInformation("Starting cleanup job");
         foreach (KeyValuePair<string, Database.DatabaseValue> kv in _database)
         {
-            var expirationDate = kv.Value.ExpirationDate;
+            DateTime? expirationDate = kv.Value.ExpirationDate;
             if (expirationDate == null || expirationDate > _dateTimeProvider.Now)
             {
                 continue;
@@ -37,16 +48,5 @@ public class CleanupJob : IJob
         }
 
         log.LogInformation("Finished cleanup job");
-    }
-
-    public async Task Start()
-    {
-        var delay = _configurationCleanupJob.Interval;
-        log.LogInformation($"Starting cleanup job perdiodically every {delay}");
-        while (true)
-        {
-            await Task.Delay(delay);
-            Run();
-        }
     }
 }

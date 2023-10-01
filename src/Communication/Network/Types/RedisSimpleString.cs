@@ -4,7 +4,7 @@ namespace Lesniak.Redis.Communication.Network.Types;
 
 public class RedisSimpleString : RedisValue
 {
-    const char Identifier = '+';
+    private const char Identifier = '+';
     private readonly string _value;
 
     private RedisSimpleString(string value)
@@ -14,9 +14,12 @@ public class RedisSimpleString : RedisValue
 
     public override byte[] Serialize()
     {
-        var result = $"{Identifier}{_value}\r\n";
+        string result = $"{Identifier}{_value}\r\n";
         return Encoding.ASCII.GetBytes(result);
     }
 
-    public static RedisSimpleString From(string? s) => new(s);
+    public static RedisSimpleString From(string? s)
+    {
+        return new RedisSimpleString(s);
+    }
 }

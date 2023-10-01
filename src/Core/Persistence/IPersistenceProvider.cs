@@ -5,7 +5,7 @@ public interface IPersistenceProvider
     void Save();
 
     /// <summary>
-    /// Load database from disk. Existing values are removed.
+    ///     Load database from disk. Existing values are removed.
     /// </summary>
     void Load();
 }

@@ -15,8 +15,8 @@ public class RedisBulkString : RedisValue
 
     public static (RedisValue, int) Deserialize(byte[] data, int offset)
     {
-        var lengthEnd = Array.IndexOf(data, (byte)'\r', offset);
-        var length = Int32.Parse(Encoding.ASCII.GetString(data, offset + 1, lengthEnd - offset - 1));
+        int lengthEnd = Array.IndexOf(data, (byte)'\r', offset);
+        int length = Int32.Parse(Encoding.ASCII.GetString(data, offset + 1, lengthEnd - offset - 1));
         int stringStart = lengthEnd + 2;
         RedisBulkString result = new(data.AsSpan(stringStart, length).ToArray());
         return (result, stringStart + length + 2);
@@ -38,11 +38,23 @@ public class RedisBulkString : RedisValue
         return bytes.ToArray();
     }
 
-    public static RedisBulkString From(string? s) => new(Encoding.ASCII.GetBytes(s));
+    public static RedisBulkString From(string? s)
+    {
+        return new RedisBulkString(Encoding.ASCII.GetBytes(s));
+    }
 
-    public string ToAsciiString() => Encoding.ASCII.GetString(Value!);
+    public string ToAsciiString()
+    {
+        return Encoding.ASCII.GetString(Value!);
+    }
 
-    public static RedisBulkString From(byte[] bs) => new(bs);
+    public static RedisBulkString From(byte[] bs)
+    {
+        return new RedisBulkString(bs);
+    }
 
-    public static RedisBulkString Nil() => new(null);
+    public static RedisBulkString Nil()
+    {
+        return new RedisBulkString(null);
+    }
 }

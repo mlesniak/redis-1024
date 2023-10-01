@@ -1,6 +1,4 @@
-﻿using System.Text;
-
-using Lesniak.Redis.Communication.Network;
+﻿using Lesniak.Redis.Communication.Network;
 using Lesniak.Redis.Core;
 using Lesniak.Redis.Core.Jobs;
 using Lesniak.Redis.Core.Persistence;
@@ -14,12 +12,12 @@ namespace Lesniak.Redis;
 // TODO(mlesniak) Proper client-based testing
 // TODO(mlesniak) Proper testsuite
 // TODO(mlesniak) Documentation
-class Program
+internal class Program
 {
     private static ILogger log = Logging.For<Program>();
     private ServiceProvider _serviceProvider;
 
-    void AddServices()
+    private void AddServices()
     {
         _serviceProvider = new ServiceCollection()
             .AddSingleton<Configuration>()
@@ -34,9 +32,9 @@ class Program
             .BuildServiceProvider();
     }
 
-    void SpawnJobs()
+    private void SpawnJobs()
     {
-        foreach (var job in _serviceProvider.GetServices<IJob>())
+        foreach (IJob job in _serviceProvider.GetServices<IJob>())
         {
             _ = Task.Run(() => job.Start());
         }
@@ -44,13 +42,13 @@ class Program
 
     private void LoadDatabase()
     {
-        var provider = _serviceProvider.GetRequiredService<IPersistenceProvider>();
+        IPersistenceProvider provider = _serviceProvider.GetRequiredService<IPersistenceProvider>();
         provider.Load();
     }
 
     public static async Task Main()
     {
-        var program = new Program();
+        Program program = new Program();
         program.AddServices();
         program.SpawnJobs();
         program.LoadDatabase();
@@ -60,8 +58,8 @@ class Program
 
     private void StartNetworkServer()
     {
-        var server = _serviceProvider.GetRequiredService<NetworkServer>();
-        var database = _serviceProvider.GetRequiredService<IDatabase>();
+        NetworkServer server = _serviceProvider.GetRequiredService<NetworkServer>();
+        IDatabase database = _serviceProvider.GetRequiredService<IDatabase>();
 
         // __Booksleeve_TieBreak is a key used by the BookSleeve Redis
         // client library for .NET. It's used to conduct a tie-break

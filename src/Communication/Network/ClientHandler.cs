@@ -1,4 +1,3 @@
-using System.Net.Sockets;
 using System.Text;
 
 using Lesniak.Redis.Communication.Network.Types;
@@ -30,8 +29,8 @@ public class ClientHandler
         while (offset < stream.Length)
         {
             // Commands are send as serialized arrays.
-            var (commands, nextOffset) = RedisValue.Deserialize<RedisArray>(stream, offset);
-            var singleResponse = ExecuteCommand(ctx, commands);
+            (RedisArray commands, int nextOffset) = RedisValue.Deserialize<RedisArray>(stream, offset);
+            byte[] singleResponse = ExecuteCommand(ctx, commands);
             responses.AddRange(singleResponse);
             offset = nextOffset;
         }
@@ -39,12 +38,12 @@ public class ClientHandler
         return responses.ToArray();
     }
 
-    byte[] ExecuteCommand(ClientContext ctx, RedisArray commandline)
+    private byte[] ExecuteCommand(ClientContext ctx, RedisArray commandline)
     {
         IList<RedisValue> parts = commandline.Values!;
-        var rs = ((RedisBulkString)parts[0]).Value!;
-        var command = Encoding.ASCII.GetString(rs).ToLower();
-        var arguments = parts.Skip(1).ToList();
+        byte[] rs = ((RedisBulkString)parts[0]).Value!;
+        string command = Encoding.ASCII.GetString(rs).ToLower();
+        List<RedisValue> arguments = parts.Skip(1).ToList();
 
         Func<ClientContext, List<RedisValue>, RedisValue> method = command switch
         {
@@ -58,7 +57,7 @@ public class ClientHandler
             _ => UnknownCommandHandler
         };
 
-        var attributes = method.Method.GetCustomAttributes(typeof(RequiresAuthentication), false);
+        object[] attributes = method.Method.GetCustomAttributes(typeof(RequiresAuthentication), false);
         if (_database.AuthenticationRequired && attributes.Length > 0 && !ctx.Authenticated)
         {
             return RedisErrorString.From("Authentication needed. Use AUTH command").Serialize();
@@ -68,16 +67,16 @@ public class ClientHandler
         return result.Serialize();
     }
 
-    [RequiresAuthentication] 
+    [RequiresAuthentication]
     private RedisValue UnsubscribeHandler(ClientContext ctx, List<RedisValue> arguments)
     {
         List<string> unsubscribedFrom = new();
 
         if (arguments.Count > 0)
         {
-            foreach (var ch in arguments)
+            foreach (RedisValue ch in arguments)
             {
-                var channel = ((RedisBulkString)ch).ToAsciiString();
+                string channel = ((RedisBulkString)ch).ToAsciiString();
                 _database.Unsubscribe(ctx.ClientId, channel);
                 unsubscribedFrom.Add(channel);
             }
@@ -87,45 +86,45 @@ public class ClientHandler
             unsubscribedFrom.AddRange(_database.UnsubscribeAll(ctx.ClientId));
         }
 
-        var response = unsubscribedFrom
+        RedisBulkString[] response = unsubscribedFrom
             .Select(channel => RedisBulkString.From(channel))
             .Prepend(RedisBulkString.From("unsubscribe"))
             .ToArray();
         return RedisArray.From(response);
     }
 
-    [RequiresAuthentication] 
+    [RequiresAuthentication]
     private RedisValue PublishHandler(ClientContext ctx, List<RedisValue> arguments)
     {
         if (arguments.Count() < 2)
         {
             return RedisErrorString.From("Not enough arguments");
         }
-        
-        var channel = ((RedisBulkString)arguments[0]).ToAsciiString();
-        var message = ((RedisBulkString)arguments[1]).Value!;
 
-        var sendTo = _database.Publish(channel, message);
+        string channel = ((RedisBulkString)arguments[0]).ToAsciiString();
+        byte[] message = ((RedisBulkString)arguments[1]).Value!;
+
+        int sendTo = _database.Publish(channel, message);
         return RedisNumber.From(sendTo);
     }
 
-    [RequiresAuthentication] 
+    [RequiresAuthentication]
     private RedisValue SubscribeHandler(ClientContext ctx, List<RedisValue> arguments)
     {
         if (!arguments.Any())
         {
             return RedisErrorString.From("Not enough arguments");
         }
-       
+
         List<(string, int)> subscriberCounts = new();
-        foreach (var ch in arguments)
+        foreach (RedisValue ch in arguments)
         {
-            var channel = ((RedisBulkString)ch).ToAsciiString();
-            var subscribers = _database.Subscribe(ctx.ClientId, channel, ResponseAction);
+            string channel = ((RedisBulkString)ch).ToAsciiString();
+            int subscribers = _database.Subscribe(ctx.ClientId, channel, ResponseAction);
             subscriberCounts.Add((channel, subscribers));
         }
 
-        var response = subscriberCounts
+        RedisValue[] response = subscriberCounts
             .SelectMany(tuple =>
                 new RedisValue[]
                 {
@@ -139,7 +138,7 @@ public class ClientHandler
         void ResponseAction(string c, byte[] message)
         {
             log.LogTrace("Received message on channel {Channel}: {S}", c, Encoding.UTF8.GetString(message));
-            var response = RedisArray.From(
+            byte[] response = RedisArray.From(
                     RedisBulkString.From("message"),
                     RedisBulkString.From(c),
                     RedisBulkString.From(message))
@@ -155,7 +154,7 @@ public class ClientHandler
             return RedisErrorString.From("Not enough arguments");
         }
 
-        var response = ((RedisBulkString)arguments[0]).Value!;
+        byte[] response = ((RedisBulkString)arguments[0]).Value!;
         return RedisBulkString.From(response);
     }
 
@@ -168,7 +167,7 @@ public class ClientHandler
             return RedisErrorString.From("Not enough arguments");
         }
 
-        var password = ((RedisBulkString)arguments[0]).ToAsciiString();
+        string password = ((RedisBulkString)arguments[0]).ToAsciiString();
         if (_database.VerifyPassword(password))
         {
             ctx.Authenticated = true;
@@ -178,7 +177,7 @@ public class ClientHandler
         return RedisErrorString.From("invalid password");
     }
 
-    [RequiresAuthentication] 
+    [RequiresAuthentication]
     private RedisValue SetHandler(ClientContext ctx, IReadOnlyList<RedisValue> arguments)
     {
         if (arguments.Count() < 2)
@@ -186,14 +185,14 @@ public class ClientHandler
             return RedisErrorString.From("Not enough arguments");
         }
 
-        var setKey = ((RedisBulkString)arguments[0]).ToAsciiString();
+        string setKey = ((RedisBulkString)arguments[0]).ToAsciiString();
         byte[] value = ((RedisBulkString)arguments[1]).Value!;
 
         int? expirationInMs = null;
         if (arguments.Count > 2)
         {
-            var type = ((RedisBulkString)arguments[2]).ToAsciiString();
-            var num = Int32.Parse(((RedisBulkString)arguments[3]).ToAsciiString());
+            string type = ((RedisBulkString)arguments[2]).ToAsciiString();
+            int num = Int32.Parse(((RedisBulkString)arguments[3]).ToAsciiString());
 
             expirationInMs = type.ToLower() switch
             {
@@ -207,7 +206,7 @@ public class ClientHandler
         return RedisSimpleString.From("OK");
     }
 
-    [RequiresAuthentication] 
+    [RequiresAuthentication]
     private RedisValue GetHandler(ClientContext ctx, IReadOnlyList<RedisValue> arguments)
     {
         if (!arguments.Any())
@@ -215,8 +214,8 @@ public class ClientHandler
             return RedisErrorString.From("Not enough arguments");
         }
 
-        var getKey = ((RedisBulkString)arguments[0]).ToAsciiString();
-        var resultBytes = _database.Get(getKey);
+        string getKey = ((RedisBulkString)arguments[0]).ToAsciiString();
+        byte[]? resultBytes = _database.Get(getKey);
         return resultBytes == null
             ? RedisBulkString.Nil()
             : RedisBulkString.From(resultBytes);
@@ -224,7 +223,7 @@ public class ClientHandler
 
     private RedisValue UnknownCommandHandler(ClientContext ctx, List<RedisValue> arguments)
     {
-        var command = "";
+        string command = "";
         if (arguments.Count > 0)
         {
             command = ((RedisBulkString)arguments[0]).ToAsciiString();

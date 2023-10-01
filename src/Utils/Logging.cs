@@ -6,8 +6,6 @@ public static class Logging
 {
     private static readonly ILoggerFactory _factory;
 
-    public static ILogger For<T>() => _factory.CreateLogger<T>();
-
     static Logging()
     {
         _factory = LoggerFactory.Create(builder =>
@@ -20,5 +18,10 @@ public static class Logging
                 options.TimestampFormat = "HH:mm:ss ";
             });
         });
+    }
+
+    public static ILogger For<T>()
+    {
+        return _factory.CreateLogger<T>();
     }
 }

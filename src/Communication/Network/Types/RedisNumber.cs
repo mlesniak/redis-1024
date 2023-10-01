@@ -13,10 +13,10 @@ public class RedisNumber : RedisValue
 
     public long Value { get; }
 
-    public static new (RedisValue, int) Deserialize(byte[] data, int offset)
+    public static (RedisValue, int) Deserialize(byte[] data, int offset)
     {
-        var lengthEnd = Array.IndexOf(data, (byte)'\r', offset);
-        var length = Int32.Parse(Encoding.ASCII.GetString(data, offset + 1, lengthEnd - offset - 1));
+        int lengthEnd = Array.IndexOf(data, (byte)'\r', offset);
+        int length = Int32.Parse(Encoding.ASCII.GetString(data, offset + 1, lengthEnd - offset - 1));
         int stringStart = lengthEnd + 2;
         int value = Int32.Parse(Encoding.ASCII.GetString(data, stringStart, length));
         RedisNumber result = new(value);
@@ -25,11 +25,14 @@ public class RedisNumber : RedisValue
 
     public override byte[] Serialize()
     {
-        var sb = new StringBuilder();
+        StringBuilder sb = new StringBuilder();
         sb.Append($":{Value}");
         sb.Append("\r\n");
         return Encoding.ASCII.GetBytes(sb.ToString());
     }
 
-    public static RedisNumber From(long l) => new(l);
+    public static RedisNumber From(long l)
+    {
+        return new RedisNumber(l);
+    }
 }

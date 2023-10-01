@@ -14,16 +14,28 @@ public class RedisArray : RedisValue, IEnumerable<RedisValue>
 
     public IList<RedisValue> Values { get; }
 
+    public RedisValue this[int index] => Values[index];
+
+    public IEnumerator<RedisValue> GetEnumerator()
+    {
+        return Values.GetEnumerator();
+    }
+
+    IEnumerator IEnumerable.GetEnumerator()
+    {
+        return Values.GetEnumerator();
+    }
+
     public static (RedisValue, int) Deserialize(byte[] data, int offset)
     {
         RedisArray result = new();
-        var numElementsIndexEnd = Array.IndexOf(data, (byte)'\r', offset);
-        var numElements =
+        int numElementsIndexEnd = Array.IndexOf(data, (byte)'\r', offset);
+        int numElements =
             Int32.Parse(Encoding.ASCII.GetString(data, offset + 1, numElementsIndexEnd - offset - 1));
         offset = numElementsIndexEnd + 2;
-        for (var i = 0; i < numElements; i++)
+        for (int i = 0; i < numElements; i++)
         {
-            (RedisValue elem, int nextArrayOffset) = RedisValue.Deserialize<RedisValue>(data, offset);
+            (RedisValue elem, int nextArrayOffset) = Deserialize<RedisValue>(data, offset);
             result.Values.Add(elem);
             offset = nextArrayOffset;
         }
@@ -33,7 +45,7 @@ public class RedisArray : RedisValue, IEnumerable<RedisValue>
 
     public override byte[] Serialize()
     {
-        var sb = new StringBuilder();
+        StringBuilder sb = new StringBuilder();
         sb.Append($"*{Values!.Count}");
         sb.Append("\r\n");
         foreach (RedisValue value in Values)
@@ -44,20 +56,8 @@ public class RedisArray : RedisValue, IEnumerable<RedisValue>
         return Encoding.ASCII.GetBytes(sb.ToString());
     }
 
-    public static RedisArray From(params RedisValue[] elements) => new(elements);
-
-    public RedisValue this[int index]
+    public static RedisArray From(params RedisValue[] elements)
     {
-        get { return Values[index]; }
-    }
-
-    public IEnumerator<RedisValue> GetEnumerator()
-    {
-        return Values.GetEnumerator();
-    }
-
-    IEnumerator IEnumerable.GetEnumerator()
-    {
-        return Values.GetEnumerator();
+        return new RedisArray(elements);
     }
 }

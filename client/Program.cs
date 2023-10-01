@@ -1,5 +1,4 @@
 ﻿using System.Diagnostics;
-using System.Globalization;
 
 using StackExchange.Redis;
 
@@ -9,7 +8,7 @@ Trace.Listeners.Add(new TextWriterTraceListener(traceWriter));
 
 try
 {
-    var options = new ConfigurationOptions { EndPoints = { "localhost" }, SyncTimeout = 5000 };
+    ConfigurationOptions options = new ConfigurationOptions { EndPoints = { "localhost" }, SyncTimeout = 5000 };
     ConnectionMultiplexer redis = ConnectionMultiplexer.Connect(options, traceWriter);
 
     // IDatabase db = redis.GetDatabase();
@@ -19,7 +18,8 @@ try
     // Console.WriteLine($"Value: {value}");
 
     ISubscriber sub = redis.GetSubscriber();
-    sub.Subscribe("foo", (channel, message) => {
+    sub.Subscribe("foo", (channel, message) =>
+    {
         Console.WriteLine($"Received message: {message} on channel: {channel}");
     });
     while (true)

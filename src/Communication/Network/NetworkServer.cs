@@ -9,12 +9,12 @@ namespace Lesniak.Redis.Communication.Network;
 
 public class NetworkServer
 {
-    private readonly ClientHandler _clientHandler;
     private static readonly ILogger log = Logging.For<NetworkServer>();
+    private readonly ClientHandler _clientHandler;
+    private readonly int _maxReadBuffer;
+    private readonly int _port;
 
     private readonly TcpListener _server;
-    private readonly int _port;
-    private readonly int _maxReadBuffer;
 
     public NetworkServer(Configuration configuration, ClientHandler clientHandler)
     {
@@ -44,12 +44,12 @@ public class NetworkServer
 
     private void HandleClient(NetworkStream stream)
     {
-        var ctx = new ClientContext
+        ClientContext ctx = new()
         {
             // Used as a backchannel to send data to the client for
             // asynchronous operations, such as a response to a
             // subscription.
-            SendToClient = (bytes) =>
+            SendToClient = bytes =>
             {
                 // In RESP2, no other commands than subscribe and 
                 // unsubscribe are allowed from the client. We allow
@@ -67,7 +67,7 @@ public class NetworkServer
             log.LogInformation("Client {Id} connected", ctx.ClientId);
             while (NetworkUtils.Read(stream, _maxReadBuffer) is { } readBytes)
             {
-                var response = _clientHandler.Handle(ctx, readBytes);
+                byte[] response = _clientHandler.Handle(ctx, readBytes);
                 lock (stream)
                 {
                     stream.Write(response, 0, response.Length);

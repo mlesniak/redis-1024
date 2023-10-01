@@ -12,10 +12,14 @@ public delegate void DatabaseUpdated();
 // ReSharper disable once RedundantExtendsListEntry
 public class Database : IDatabaseManagement, IDatabase
 {
+    public delegate void AsyncMessageReceiver(string channel, byte[] message);
+
     private static readonly ILogger log = Logging.For<Database>();
-    private readonly ConcurrentDictionary<string, List<Tuple<string, AsyncMessageReceiver>>> _subscriptions = new();
-    private readonly ConcurrentDictionary<string, DatabaseValue> _storage = new();
     private readonly IDateTimeProvider _dateTimeProvider;
+    private readonly ConcurrentDictionary<string, DatabaseValue> _storage = new();
+
+    private readonly ConcurrentDictionary<string, List<Tuple<string, AsyncMessageReceiver>>> _subscriptions = new();
+
     // We use a ReaderWriterLockSlim to allow multiple writers of 
     // a single value to be processed in parallel (since we use a 
     // thread-safe data structure). At the same time, we want to 
@@ -25,27 +29,16 @@ public class Database : IDatabaseManagement, IDatabase
     private readonly ReaderWriterLockSlim _writeLock = new();
     private string? _password;
 
-    public event DatabaseUpdated? DatabaseUpdates;
-    
-    public delegate void AsyncMessageReceiver(string channel, byte[] message);
-
     public Database(Configuration configuration, IDateTimeProvider dateTimeProvider)
     {
         _dateTimeProvider = dateTimeProvider;
         _password = configuration.Password;
     }
 
-    public class DatabaseValue
-    {
-        public byte[]? Value { get; }
-        public DateTime? ExpirationDate { get; }
+    // internal
+    public int Count => _storage.Count;
 
-        public DatabaseValue(byte[]? value, DateTime? expirationDate)
-        {
-            Value = value;
-            ExpirationDate = expirationDate;
-        }
-    }
+    public event DatabaseUpdated? DatabaseUpdates;
 
     public void Set(string key, byte[] value, long? expiration = null)
     {
@@ -105,14 +98,10 @@ public class Database : IDatabaseManagement, IDatabase
         }
     }
 
-    // internal
-    public int Count
+    IEnumerator<KeyValuePair<string, DatabaseValue>> IEnumerable<KeyValuePair<string, DatabaseValue>>.GetEnumerator()
     {
-        get => _storage.Count;
+        return _storage.GetEnumerator();
     }
-
-    IEnumerator<KeyValuePair<string, DatabaseValue>> IEnumerable<KeyValuePair<string, DatabaseValue>>.GetEnumerator() =>
-        _storage.GetEnumerator();
 
     public void Clear()
     {
@@ -123,7 +112,7 @@ public class Database : IDatabaseManagement, IDatabase
     {
         return _storage.GetEnumerator();
     }
-    
+
     public int Publish(string channel, byte[] message)
     {
         if (!_subscriptions.TryGetValue(channel, out List<Tuple<string, AsyncMessageReceiver>>? receivers))
@@ -149,7 +138,7 @@ public class Database : IDatabaseManagement, IDatabase
     public int Subscribe(string clientId, string channel, AsyncMessageReceiver receiver)
     {
         log.LogDebug("{ClientId}: Adding subscription to {Channel}", clientId, channel);
-        var tuple = Tuple.Create(clientId, receiver);
+        Tuple<string, AsyncMessageReceiver> tuple = Tuple.Create(clientId, receiver);
         _subscriptions.AddOrUpdate(channel,
             new List<Tuple<string, AsyncMessageReceiver>> { tuple },
             (_, current) =>
@@ -200,7 +189,7 @@ public class Database : IDatabaseManagement, IDatabase
             receivers.RemoveAll(x => x.Item1 == clientId);
         }
     }
-    
+
     public void SetPassword(string password)
     {
         _password = password;
@@ -216,4 +205,16 @@ public class Database : IDatabaseManagement, IDatabase
     }
 
     public bool AuthenticationRequired => _password != null;
+
+    public class DatabaseValue
+    {
+        public DatabaseValue(byte[]? value, DateTime? expirationDate)
+        {
+            Value = value;
+            ExpirationDate = expirationDate;
+        }
+
+        public byte[]? Value { get; }
+        public DateTime? ExpirationDate { get; }
+    }
 }

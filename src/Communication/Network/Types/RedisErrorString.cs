@@ -4,7 +4,7 @@ namespace Lesniak.Redis.Communication.Network.Types;
 
 public class RedisErrorString : RedisValue
 {
-    const char Identifier = '-';
+    private const char Identifier = '-';
     private readonly string _value;
 
     private RedisErrorString(string value)
@@ -14,9 +14,12 @@ public class RedisErrorString : RedisValue
 
     public override byte[] Serialize()
     {
-        var result = $"{Identifier}{_value}\r\n";
+        string result = $"{Identifier}{_value}\r\n";
         return Encoding.ASCII.GetBytes(result);
     }
 
-    public static RedisErrorString From(string? s) => new(s);
+    public static RedisErrorString From(string? s)
+    {
+        return new RedisErrorString(s);
+    }
 }
