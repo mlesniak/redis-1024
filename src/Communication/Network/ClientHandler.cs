@@ -97,6 +97,11 @@ public class ClientHandler
     [RequiresAuthentication] 
     private RedisValue PublishHandler(ClientContext ctx, List<RedisValue> arguments)
     {
+        if (arguments.Count() < 2)
+        {
+            return RedisErrorString.From("Not enough arguments");
+        }
+        
         var channel = ((RedisBulkString)arguments[0]).ToAsciiString();
         var message = ((RedisBulkString)arguments[1]).Value!;
 
@@ -107,6 +112,11 @@ public class ClientHandler
     [RequiresAuthentication] 
     private RedisValue SubscribeHandler(ClientContext ctx, List<RedisValue> arguments)
     {
+        if (!arguments.Any())
+        {
+            return RedisErrorString.From("Not enough arguments");
+        }
+       
         List<(string, int)> subscriberCounts = new();
         foreach (var ch in arguments)
         {
@@ -140,6 +150,11 @@ public class ClientHandler
 
     private RedisValue EchoHandler(ClientContext ctx, List<RedisValue> arguments)
     {
+        if (!arguments.Any())
+        {
+            return RedisErrorString.From("Not enough arguments");
+        }
+
         var response = ((RedisBulkString)arguments[0]).Value!;
         return RedisBulkString.From(response);
     }
@@ -148,6 +163,11 @@ public class ClientHandler
     // any form of transport encryption would blow up the whole project, though.
     private RedisValue AuthHandler(ClientContext ctx, List<RedisValue> arguments)
     {
+        if (!arguments.Any())
+        {
+            return RedisErrorString.From("Not enough arguments");
+        }
+
         var password = ((RedisBulkString)arguments[0]).ToAsciiString();
         if (_database.VerifyPassword(password))
         {
@@ -161,7 +181,11 @@ public class ClientHandler
     [RequiresAuthentication] 
     private RedisValue SetHandler(ClientContext ctx, IReadOnlyList<RedisValue> arguments)
     {
-        // TODO(mlesniak) check number of parameters
+        if (arguments.Count() < 2)
+        {
+            return RedisErrorString.From("Not enough arguments");
+        }
+
         var setKey = ((RedisBulkString)arguments[0]).ToAsciiString();
         byte[] value = ((RedisBulkString)arguments[1]).Value!;
 
@@ -186,6 +210,11 @@ public class ClientHandler
     [RequiresAuthentication] 
     private RedisValue GetHandler(ClientContext ctx, IReadOnlyList<RedisValue> arguments)
     {
+        if (!arguments.Any())
+        {
+            return RedisErrorString.From("Not enough arguments");
+        }
+
         var getKey = ((RedisBulkString)arguments[0]).ToAsciiString();
         var resultBytes = _database.Get(getKey);
         return resultBytes == null
