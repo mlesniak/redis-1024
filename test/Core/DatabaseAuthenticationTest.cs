@@ -11,7 +11,7 @@ public class DatabaseAuthenticationTest
     public DatabaseAuthenticationTest()
     {
         _dateTimeProvider = new TestDateTimeProvider();
-        _sut = new Database(_configuration, _dateTimeProvider);
+        _sut = new Database(TestLogger<Database>.Get(), _configuration, _dateTimeProvider);
     }
 
     [Fact]
@@ -28,7 +28,7 @@ public class DatabaseAuthenticationTest
         // file anyway). Therefore we need to manually create
         // new _sut instances outside the constructor.
         _configuration.Password = "foo";
-        _sut = new Database(_configuration, _dateTimeProvider);
+        _sut = new Database(TestLogger<Database>.Get(), _configuration, _dateTimeProvider);
         Assert.True(_sut.AuthenticationRequired);
     }
 }

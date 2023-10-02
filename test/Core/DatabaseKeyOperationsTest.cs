@@ -11,7 +11,7 @@ public class DatabaseKeyOperationsTest
     public DatabaseKeyOperationsTest()
     {
         _dateTimeProvider = new TestDateTimeProvider();
-        _sut = new Database(_configuration, _dateTimeProvider);
+        _sut = new Database(TestLogger<Database>.Get(), _configuration, _dateTimeProvider);
     }
 
     [Fact]
