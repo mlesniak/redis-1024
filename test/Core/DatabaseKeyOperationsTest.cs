@@ -40,10 +40,23 @@ public class DatabaseKeyOperationsTest
         Assert.Null(_sut.Get("key"));
     }
 
-    
     [Fact]
     public void Get_ReturnsNull_OnUndefinedKey()
     {
+        Assert.Null(_sut.Get("key"));
+    }
+    
+    [Fact]
+    public void Remove_DoesNothing_ForNonExistingKey()
+    {
+        _sut.Remove("not-existing");
+    }
+    
+    [Fact]
+    public void Remove_Removes_ExistingKey()
+    {
+        _sut.Set("key", new byte[]{1, 2, 3});
+        _sut.Remove("key");
         Assert.Null(_sut.Get("key"));
     }
 }
