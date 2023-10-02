@@ -1,7 +1,7 @@
 using System.Collections;
 using System.Collections.Concurrent;
 
-using Lesniak.Redis.Infrastructure;
+using Lesniak.Redis.Utils;
 
 using Microsoft.Extensions.Logging;
 
@@ -14,7 +14,7 @@ public class Database : IDatabaseManagement, IDatabase
 {
     public delegate void AsyncMessageReceiver(string channel, byte[] message);
 
-    private static readonly ILogger log = Logging.For<Database>();
+    private readonly ILogger<Database> _log;
     private readonly IDateTimeProvider _dateTimeProvider;
     private readonly ConcurrentDictionary<string, DatabaseValue> _storage = new();
 
@@ -29,8 +29,9 @@ public class Database : IDatabaseManagement, IDatabase
     private readonly ReaderWriterLockSlim _writeLock = new();
     private string? _password;
 
-    public Database(IConfiguration configuration, IDateTimeProvider dateTimeProvider)
+    public Database(ILogger<Database> log, IConfiguration configuration, IDateTimeProvider dateTimeProvider)
     {
+        _log = log;
         _dateTimeProvider = dateTimeProvider;
         _password = configuration.Password;
     }
@@ -42,7 +43,7 @@ public class Database : IDatabaseManagement, IDatabase
         _writeLock.EnterReadLock();
         try
         {
-            log.LogDebug("Setting {Key}", key);
+            _log.LogDebug("Setting {Key}", key);
             DateTime? expirationDate = null;
             if (expiration.HasValue)
             {
@@ -60,7 +61,7 @@ public class Database : IDatabaseManagement, IDatabase
 
     public byte[]? Get(string key)
     {
-        log.LogDebug("Retrieving {Key}", key);
+        _log.LogDebug("Retrieving {Key}", key);
         _storage.TryGetValue(key, out DatabaseValue? dbValue);
         if (dbValue == null || dbValue.ExpirationDate <= _dateTimeProvider.Now)
         {
@@ -75,7 +76,7 @@ public class Database : IDatabaseManagement, IDatabase
         _writeLock.EnterReadLock();
         try
         {
-            log.LogDebug("Removing {Key}", key);
+            _log.LogDebug("Removing {Key}", key);
             _storage.Remove(key, out DatabaseValue? _);
         }
         finally
@@ -136,7 +137,7 @@ public class Database : IDatabaseManagement, IDatabase
 
     public int Subscribe(string clientId, string channel, AsyncMessageReceiver receiver)
     {
-        log.LogDebug("{ClientId}: Adding subscription to {Channel}", clientId, channel);
+        _log.LogDebug("{ClientId}: Adding subscription to {Channel}", clientId, channel);
         Tuple<string, AsyncMessageReceiver> tuple = Tuple.Create(clientId, receiver);
         _subscriptions.AddOrUpdate(channel,
             new List<Tuple<string, AsyncMessageReceiver>> { tuple },
@@ -156,7 +157,7 @@ public class Database : IDatabaseManagement, IDatabase
             return receivers.Count;
         }
 
-        log.LogWarning("Unable to get info about recently subscribed {Channel}", channel);
+        _log.LogWarning("Unable to get info about recently subscribed {Channel}", channel);
         return 1;
     }
 
@@ -165,10 +166,10 @@ public class Database : IDatabaseManagement, IDatabase
         return _subscriptions
             .Select(pair =>
             {
-                log.LogInformation("Examining channel {Channel}", pair.Key);
+                _log.LogInformation("Examining channel {Channel}", pair.Key);
                 if (pair.Value.RemoveAll(x => x.Item1 == clientId) > 0)
                 {
-                    log.LogDebug("For {ClientId}: Removing subscription to {Channel}", clientId, pair.Key);
+                    _log.LogDebug("For {ClientId}: Removing subscription to {Channel}", clientId, pair.Key);
                     return pair.Key;
                 }
                 return null;

@@ -2,7 +2,7 @@ using System.Text;
 
 using Lesniak.Redis.Communication.Network.Types;
 using Lesniak.Redis.Core;
-using Lesniak.Redis.Infrastructure;
+using Lesniak.Redis.Utils;
 
 using Microsoft.Extensions.Logging;
 
@@ -14,11 +14,12 @@ public class RequiresAuthentication : Attribute
 
 public class ClientHandler
 {
-    private static readonly ILogger log = Logging.For<ClientHandler>();
+    private readonly ILogger<ClientHandler> _log;
     private readonly IDatabase _database;
 
-    public ClientHandler(IDatabase database)
+    public ClientHandler(ILogger<ClientHandler> log, IDatabase database)
     {
+        _log = log;
         _database = database;
     }
 
@@ -47,6 +48,7 @@ public class ClientHandler
 
         Func<ClientContext, List<RedisValue>, RedisValue> method = command switch
         {
+            // TODO(mlesniak) add del command
             "auth" => AuthHandler,
             "set" => SetHandler,
             "get" => GetHandler,
@@ -137,7 +139,7 @@ public class ClientHandler
 
         void ResponseAction(string c, byte[] message)
         {
-            log.LogTrace("Received message on channel {Channel}: {S}", c, Encoding.UTF8.GetString(message));
+            _log.LogTrace("Received message on channel {Channel}: {S}", c, Encoding.UTF8.GetString(message));
             byte[] response = RedisArray.From(
                     RedisBulkString.From("message"),
                     RedisBulkString.From(c),

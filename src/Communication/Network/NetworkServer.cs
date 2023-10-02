@@ -1,7 +1,7 @@
 using System.Net;
 using System.Net.Sockets;
 
-using Lesniak.Redis.Infrastructure;
+using Lesniak.Redis.Utils;
 
 using Microsoft.Extensions.Logging;
 
@@ -9,15 +9,16 @@ namespace Lesniak.Redis.Communication.Network;
 
 public class NetworkServer
 {
-    private static readonly ILogger log = Logging.For<NetworkServer>();
+    private readonly ILogger _log;
     private readonly ClientHandler _clientHandler;
     private readonly int _maxReadBuffer;
     private readonly int _port;
 
     private readonly TcpListener _server;
 
-    public NetworkServer(IConfiguration configuration, ClientHandler clientHandler)
+    public NetworkServer(ILogger<NetworkServer> log, IConfiguration configuration, ClientHandler clientHandler)
     {
+        _log = log;
         _clientHandler = clientHandler;
         _port = configuration.Port;
         _maxReadBuffer = configuration.MaxReadBuffer;
@@ -26,10 +27,10 @@ public class NetworkServer
 
     public void Start()
     {
-        log.LogInformation("Server starting on {Port}", _port);
+        _log.LogInformation("Server starting on {Port}", _port);
         _server.Start();
 
-        log.LogInformation("Waiting for connections");
+        _log.LogInformation("Waiting for connections");
         while (true)
         {
             TcpClient client = _server.AcceptTcpClient();
@@ -64,7 +65,7 @@ public class NetworkServer
         };
         try
         {
-            log.LogInformation("Client {Id} connected", ctx.ClientId);
+            _log.LogInformation("Client {Id} connected", ctx.ClientId);
             while (NetworkUtils.Read(stream, _maxReadBuffer) is { } readBytes)
             {
                 byte[] response = _clientHandler.Handle(ctx, readBytes);
@@ -73,11 +74,11 @@ public class NetworkServer
                     stream.Write(response, 0, response.Length);
                 }
             }
-            log.LogInformation("Client {Id} disconnected", ctx.ClientId);
+            _log.LogInformation("Client {Id} disconnected", ctx.ClientId);
         }
         catch (Exception e)
         {
-            log.LogWarning("Error while handling client {Id}: {Exception}", ctx.ClientId, e.Message);
+            _log.LogWarning("Error while handling client {Id}: {Exception}", ctx.ClientId, e.Message);
         }
         finally
         {

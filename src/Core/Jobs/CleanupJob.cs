@@ -1,4 +1,4 @@
-using Lesniak.Redis.Infrastructure;
+using Lesniak.Redis.Utils;
 
 using Microsoft.Extensions.Logging;
 
@@ -6,13 +6,18 @@ namespace Lesniak.Redis.Core.Jobs;
 
 public class CleanupJob : IJob
 {
-    private static readonly ILogger log = Logging.For<CleanupJob>();
+    private readonly ILogger<CleanupJob> _log;
     private readonly IConfiguration.JobConfiguration _configurationCleanupJob;
     private readonly IDatabaseManagement _database;
     private readonly IDateTimeProvider _dateTimeProvider;
 
-    public CleanupJob(IConfiguration configuration, IDateTimeProvider dateTimeProvider, IDatabaseManagement database)
+    public CleanupJob(
+        ILogger<CleanupJob> log,
+        IConfiguration configuration, 
+        IDateTimeProvider dateTimeProvider, 
+        IDatabaseManagement database)
     {
+        _log = log;
         _configurationCleanupJob = configuration.CleanupJob;
         _dateTimeProvider = dateTimeProvider;
         _database = database;
@@ -21,7 +26,7 @@ public class CleanupJob : IJob
     public async Task Start()
     {
         TimeSpan delay = _configurationCleanupJob.Interval;
-        log.LogInformation($"Starting cleanup job perdiodically every {delay}");
+        _log.LogInformation($"Starting cleanup job perdiodically every {delay}");
         while (true)
         {
             await Task.Delay(delay);
@@ -34,7 +39,7 @@ public class CleanupJob : IJob
     /// </summary>
     private void Run()
     {
-        log.LogInformation("Starting cleanup job");
+        _log.LogInformation("Starting cleanup job");
         foreach (KeyValuePair<string, Database.DatabaseValue> kv in _database)
         {
             DateTime? expirationDate = kv.Value.ExpirationDate;
@@ -43,10 +48,10 @@ public class CleanupJob : IJob
                 continue;
             }
 
-            log.LogInformation("Cleaning up key {Key}", kv.Key);
+            _log.LogInformation("Cleaning up key {Key}", kv.Key);
             _database.Remove(kv.Key);
         }
 
-        log.LogInformation("Finished cleanup job");
+        _log.LogInformation("Finished cleanup job");
     }
 }

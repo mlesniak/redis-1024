@@ -8,4 +8,6 @@ public class TestConfiguration : IConfiguration
     public string? Password { get; set; }
     public IConfiguration.JobConfiguration PersistenceJob { get; } = new() { Interval = TimeSpan.MaxValue };
     public IConfiguration.JobConfiguration CleanupJob { get; } = new() { Interval = TimeSpan.MaxValue };
+
+
 }

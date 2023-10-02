@@ -9,6 +9,16 @@ public class Configuration : IConfiguration
 
     public Configuration()
     {
+        // Use default values for logging configuration in case we run
+        // a test. Until now, we did not need to configure logging in
+        // test, hence we did not add it to the IConfiguration interface.
+        var configurationBuilder = new ConfigurationBuilder();
+        configurationBuilder.AddInMemoryCollection(new Dictionary<string, string>
+        {
+            { "Logging:LogLevel:Lesniak.Redis", "Debug" }
+        });
+        Logging = configurationBuilder.Build();
+
         IConfigurationBuilder builder = new ConfigurationBuilder()
             .SetBasePath(Directory.GetCurrentDirectory())
             .AddJsonFile("appsettings.json", true, false);
@@ -23,10 +33,7 @@ public class Configuration : IConfiguration
     public IConfiguration.JobConfiguration PersistenceJob { get; init; } = new();
     public IConfiguration.JobConfiguration CleanupJob { get; init; } = new();
 
-    public static Microsoft.Extensions.Configuration.IConfiguration GetSection(string key)
-    {
-        return _configuration.GetSection(key);
-    }
+    public Microsoft.Extensions.Configuration.IConfiguration Logging { get; private set; } 
 
     public override string ToString()
     {

@@ -2,7 +2,7 @@
 using Lesniak.Redis.Core;
 using Lesniak.Redis.Core.Jobs;
 using Lesniak.Redis.Core.Persistence;
-using Lesniak.Redis.Infrastructure;
+using Lesniak.Redis.Utils;
 
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -14,12 +14,20 @@ namespace Lesniak.Redis;
 // TODO(mlesniak) Documentation
 internal class Program
 {
-    private static ILogger log = Logging.For<Program>();
     private ServiceProvider _serviceProvider;
 
     private void AddServices()
     {
         _serviceProvider = new ServiceCollection()
+            .AddLogging(builder =>
+            {
+                builder.AddSimpleConsole(options =>
+                {
+                    options.IncludeScopes = true;
+                    options.SingleLine = true;
+                    options.TimestampFormat = "HH:mm:ss ";
+                });
+            })
             .AddSingleton<IConfiguration, Configuration>()
             .AddSingleton<IDateTimeProvider>(new DefaultDateTimeProvider())
             .AddSingleton<IDatabase, Database>()

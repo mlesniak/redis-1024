@@ -2,7 +2,7 @@ using System.Collections.Concurrent;
 using System.Text.Json;
 
 using Lesniak.Redis.Core.Jobs;
-using Lesniak.Redis.Infrastructure;
+using Lesniak.Redis.Utils;
 
 using Microsoft.Extensions.Logging;
 
@@ -12,14 +12,18 @@ namespace Lesniak.Redis.Core.Persistence;
 
 public class JsonPersistence : IPersistenceProvider
 {
-    private static readonly ILogger log = Logging.For<PersistenceJob>();
+    private readonly ILogger<JsonPersistence> _log;
     private readonly IDatabaseManagement _database;
     private readonly string _databaseName;
     private readonly IDateTimeProvider _dateTimeProvider;
 
-    public JsonPersistence(IConfiguration configuration, IDateTimeProvider dateTimeProvider,
+    public JsonPersistence(
+        ILogger<JsonPersistence> log, 
+        IConfiguration configuration, 
+        IDateTimeProvider dateTimeProvider,
         IDatabaseManagement database)
     {
+        _log = log;
         _dateTimeProvider = dateTimeProvider;
         _database = database;
         _databaseName = configuration.DatabaseName;
@@ -44,7 +48,7 @@ public class JsonPersistence : IPersistenceProvider
         }
 
         // Serialize as JSON and write to disk.
-        log.LogInformation("Persisting database to disk");
+        _log.LogInformation("Persisting database to disk");
         string json = JsonSerializer.Serialize(values);
         File.WriteAllText(_databaseName, json);
     }
@@ -53,10 +57,10 @@ public class JsonPersistence : IPersistenceProvider
     {
         if (!File.Exists(_databaseName))
         {
-            log.LogInformation("No database file found, skipping loading");
+            _log.LogInformation("No database file found, skipping loading");
             return;
         }
-        log.LogInformation("Loading database from disk");
+        _log.LogInformation("Loading database from disk");
         _database.Clear();
 
         string json = File.ReadAllText(_databaseName);

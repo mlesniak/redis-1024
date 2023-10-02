@@ -1,4 +1,4 @@
-namespace Lesniak.Redis.Infrastructure;
+namespace Lesniak.Redis.Utils;
 
 public class DefaultDateTimeProvider : IDateTimeProvider
 {
