@@ -190,11 +190,6 @@ public class Database : IDatabaseManagement, IDatabase
         }
     }
 
-    public void SetPassword(string password)
-    {
-        _password = password;
-    }
-
     public bool VerifyPassword(string password)
     {
         if (_password == null)
