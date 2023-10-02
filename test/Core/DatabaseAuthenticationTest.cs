@@ -31,4 +31,28 @@ public class DatabaseAuthenticationTest
         _sut = new Database(TestLogger<Database>.Get(), _configuration, _dateTimeProvider);
         Assert.True(_sut.AuthenticationRequired);
     }
+
+    [Fact]
+    public void If_PasswordSet_ErrorOnWrongPassword()
+    {
+        _configuration.Password = "foo";
+        _sut = new Database(TestLogger<Database>.Get(), _configuration, _dateTimeProvider);
+
+        Assert.False(_sut.VerifyPassword("wrong-password"));
+    }
+
+    [Fact]
+    public void If_PasswordSet_VerifyCorrectPassword()
+    {
+        _configuration.Password = "foo";
+        _sut = new Database(TestLogger<Database>.Get(), _configuration, _dateTimeProvider);
+
+        Assert.True(_sut.VerifyPassword("foo"));
+    }
+
+    [Fact]
+    public void If_PasswordNotSet_VerifyIsAlwaysTrue()
+    {
+        Assert.True(_sut.VerifyPassword("anything-goes"));
+    }
 }
