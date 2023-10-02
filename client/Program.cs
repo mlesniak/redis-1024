@@ -15,7 +15,7 @@ try
     // Store and retrieve a key.
     IDatabase db = redis.GetDatabase();
     string key = "current";
-    db.StringSet(key, DateTime.Now.ToString(CultureInfo.CurrentCulture));
+    db.StringSet(key, DateTime.UtcNow.ToString(CultureInfo.CurrentCulture));
     string? value = db.StringGet(key);
     Console.WriteLine($"Value: {value}");
 
@@ -28,7 +28,7 @@ try
     while (true)
     {
         await Task.Delay(TimeSpan.FromSeconds(1));
-        sub.Publish("date", DateTime.Now.ToString());
+        sub.Publish("date", DateTime.UtcNow.ToString());
     }
 }
 catch (Exception e)

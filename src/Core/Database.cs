@@ -35,9 +35,6 @@ public class Database : IDatabaseManagement, IDatabase
         _password = configuration.Password;
     }
 
-    // internal
-    public int Count => _storage.Count;
-
     public event DatabaseUpdated? DatabaseUpdates;
 
     public void Set(string key, byte[] value, long? expiration = null)
@@ -46,9 +43,11 @@ public class Database : IDatabaseManagement, IDatabase
         try
         {
             log.LogDebug("Setting {Key}", key);
-            DateTime? expirationDate = expiration.HasValue
-                ? DateTime.UtcNow.AddMilliseconds((double)expiration)
-                : null;
+            DateTime? expirationDate = null;
+            if (expiration.HasValue)
+            {
+                expirationDate = _dateTimeProvider.Now.AddMilliseconds((double)expiration);
+            }
             DatabaseValue dbValue = new(value, expirationDate);
             _storage[key] = dbValue;
             DatabaseUpdates?.Invoke();

@@ -11,7 +11,7 @@ public interface IConfiguration
 
     public class JobConfiguration
     {
-        public TimeSpan Interval { get; } = TimeSpan.FromMinutes(1);
+        public TimeSpan Interval { get; init; } = TimeSpan.FromMinutes(1);
     }
 
 }
