@@ -6,7 +6,7 @@ public class DatabaseKeyOperationsTest
 {
     private readonly IConfiguration _configuration = new TestConfiguration();
     private readonly TestDateTimeProvider _dateTimeProvider;
-    private readonly Database _sut;
+    private readonly IDatabase _sut;
 
     public DatabaseKeyOperationsTest()
     {

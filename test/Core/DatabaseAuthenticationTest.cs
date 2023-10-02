@@ -6,7 +6,7 @@ public class DatabaseAuthenticationTest
 {
     private readonly TestConfiguration _configuration = new();
     private readonly TestDateTimeProvider _dateTimeProvider;
-    private Database _sut;
+    private IDatabase _sut;
 
     public DatabaseAuthenticationTest()
     {
