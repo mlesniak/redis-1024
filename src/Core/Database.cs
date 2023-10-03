@@ -122,20 +122,19 @@ public class Database : IDatabaseManagement, IDatabase
             return 0;
         }
 
-        // TODO(mlesniak) Fix this
-        // for (int i = receivers.Count - 1; i >= 0; i--)
-        // {
-        //     AsyncMessageReceiver receiver = receivers[i].Item2;
-        //     try
-        //     {
-        //         receiver.Invoke(channel, message);
-        //     }
-        //     catch (Exception e)
-        //     {
-        //         // TODO(mlesniak) Handle this
-        //         // receivers.RemoveAt(i);
-        //     }
-        // }
+        foreach (var pair in receivers)
+        {
+            try
+            {
+                pair.Value.Invoke(channel, message);
+            }
+            catch (Exception e)
+            {
+                _log.LogWarning("Handler threw exception {Exception}", e.Message);
+                receivers.TryRemove(pair.Key, out _);
+            }
+        }
+
         return receivers.Count;
     }
 

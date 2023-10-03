@@ -80,4 +80,78 @@ public class DatabaseChannelTest
         Equal(1, subsChannel3);
     }
 
+    [Fact]
+    public void Publish_TriggersDelegate()
+    {
+        List<byte[]> messages = new();
+        _sut.Subscribe("client-1", "channel", (channel, message) =>
+        {
+            Equal("channel", channel);
+            messages.Add(message);
+        });
+
+        _sut.Publish("channel", new byte[]
+        {
+            1,
+            2,
+            3
+        });
+
+        Single(messages);
+        Equal(new byte[]
+        {
+            1,
+            2,
+            3
+        }, messages[0]);
+    }
+
+    [Fact]
+    public void Publish_ToAnotherChannel_DoesNotTriggersDelegate()
+    {
+        List<byte[]> messages = new();
+        _sut.Subscribe("client-1", "channel", (channel, message) =>
+        {
+            Equal("channel", channel);
+            messages.Add(message);
+        });
+
+        _sut.Publish("channel-2", new byte[]
+        {
+            1,
+            2,
+            3
+        });
+
+        Empty(messages);
+    }
+
+    [Fact]
+    public void Publish_RemovesClient_IfDelegateThrowsException()
+    {
+        List<byte[]> messages = new();
+        _sut.Subscribe("client-1", "channel", (channel, message) =>
+        {
+            Equal("channel", channel);
+            messages.Add(message);
+            throw new InvalidOperationException("Stop handling this");
+        });
+
+        _sut.Publish("channel", new byte[]
+        {
+            1,
+            2,
+            3
+        });
+        // The second time should not trigger the handler, since
+        // it got removed.
+        _sut.Publish("channel", new byte[]
+        {
+            1,
+            2,
+            3
+        });
+
+        Single(messages);
+    }
 }

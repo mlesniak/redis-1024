@@ -10,6 +10,7 @@ using Microsoft.Extensions.Logging;
 namespace Lesniak.Redis;
 
 // TODO(mlesniak) Proper client-based testing
+// TODO(mlesniak) Proper integration tests? Use NSubstitute.
 // TODO(mlesniak) Proper testsuite
 // TODO(mlesniak) Documentation
 internal class Program
