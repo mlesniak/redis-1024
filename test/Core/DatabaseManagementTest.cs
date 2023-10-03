@@ -1,5 +1,7 @@
 using Lesniak.Redis.Core;
 
+using static Xunit.Assert;
+
 namespace Lesniak.Redis.Test.Core;
 
 public class DatabaseManagementTest
@@ -17,9 +19,9 @@ public class DatabaseManagementTest
     public void Clear_RemovesAllEntries()
     {
         _sut.Set("demo-1", new byte[] {1, 2, 3});
-        Assert.Single(_sut);
+        Single(_sut);
 
         _sut.Clear();
-        Assert.Empty(_sut);
+        Empty(_sut);
     }
 }

@@ -1,5 +1,7 @@
 using Lesniak.Redis.Core;
 
+using static Xunit.Assert;
+
 namespace Lesniak.Redis.Test.Core;
 
 public class DatabaseAuthenticationTest
@@ -17,7 +19,7 @@ public class DatabaseAuthenticationTest
     [Fact]
     public void ByDefault_NoPassword_Required()
     {
-        Assert.False(_sut.AuthenticationRequired);
+        False(_sut.AuthenticationRequired);
     }
 
     [Fact]
@@ -29,7 +31,7 @@ public class DatabaseAuthenticationTest
         // new _sut instances outside the constructor.
         _configuration.Password = "foo";
         _sut = new Database(TestLogger<Database>.Get(), _configuration, _dateTimeProvider);
-        Assert.True(_sut.AuthenticationRequired);
+        True(_sut.AuthenticationRequired);
     }
 
     [Fact]
@@ -38,7 +40,7 @@ public class DatabaseAuthenticationTest
         _configuration.Password = "foo";
         _sut = new Database(TestLogger<Database>.Get(), _configuration, _dateTimeProvider);
 
-        Assert.False(_sut.VerifyPassword("wrong-password"));
+        False(_sut.VerifyPassword("wrong-password"));
     }
 
     [Fact]
@@ -47,12 +49,12 @@ public class DatabaseAuthenticationTest
         _configuration.Password = "foo";
         _sut = new Database(TestLogger<Database>.Get(), _configuration, _dateTimeProvider);
 
-        Assert.True(_sut.VerifyPassword("foo"));
+        True(_sut.VerifyPassword("foo"));
     }
 
     [Fact]
     public void If_PasswordNotSet_VerifyIsAlwaysTrue()
     {
-        Assert.True(_sut.VerifyPassword("anything-goes"));
+        True(_sut.VerifyPassword("anything-goes"));
     }
 }

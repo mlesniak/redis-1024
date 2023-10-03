@@ -18,7 +18,9 @@ public class Database : IDatabaseManagement, IDatabase
     private readonly IDateTimeProvider _dateTimeProvider;
     private readonly ConcurrentDictionary<string, DatabaseValue> _storage = new();
 
-    private readonly ConcurrentDictionary<string, List<Tuple<string, AsyncMessageReceiver>>> _subscriptions = new();
+    // Structure from channel -> (clientId -> receiver function).
+    private readonly ConcurrentDictionary<string, ConcurrentDictionary<string, AsyncMessageReceiver>> _subscriptions =
+        new();
 
     // We use a ReaderWriterLockSlim to allow multiple writers of 
     // a single value to be processed in parallel (since we use a 
@@ -115,50 +117,47 @@ public class Database : IDatabaseManagement, IDatabase
 
     public int Publish(string channel, byte[] message)
     {
-        if (!_subscriptions.TryGetValue(channel, out List<Tuple<string, AsyncMessageReceiver>>? receivers))
+        if (!_subscriptions.TryGetValue(channel, out ConcurrentDictionary<string, AsyncMessageReceiver>? receivers))
         {
             return 0;
         }
 
-        for (int i = receivers.Count - 1; i >= 0; i--)
-        {
-            AsyncMessageReceiver receiver = receivers[i].Item2;
-            try
-            {
-                receiver.Invoke(channel, message);
-            }
-            catch (Exception e)
-            {
-                receivers.RemoveAt(i);
-            }
-        }
+        // TODO(mlesniak) Fix this
+        // for (int i = receivers.Count - 1; i >= 0; i--)
+        // {
+        //     AsyncMessageReceiver receiver = receivers[i].Item2;
+        //     try
+        //     {
+        //         receiver.Invoke(channel, message);
+        //     }
+        //     catch (Exception e)
+        //     {
+        //         // TODO(mlesniak) Handle this
+        //         // receivers.RemoveAt(i);
+        //     }
+        // }
         return receivers.Count;
     }
 
     public int Subscribe(string clientId, string channel, AsyncMessageReceiver receiver)
     {
         _log.LogDebug("{ClientId}: Adding subscription to {Channel}", clientId, channel);
-        Tuple<string, AsyncMessageReceiver> tuple = Tuple.Create(clientId, receiver);
+        ConcurrentDictionary<string, AsyncMessageReceiver> initialValue = new(
+            new[]
+            {
+                new KeyValuePair<string, AsyncMessageReceiver>(clientId, receiver)
+            });
         _subscriptions.AddOrUpdate(channel,
-            new List<Tuple<string, AsyncMessageReceiver>> { tuple },
+            initialValue,
             (_, current) =>
             {
-                lock (current)
-                {
-                    current.Add(tuple);
-                }
-
+                current.TryAdd(clientId, receiver);
                 return current;
             }
         );
 
-        if (_subscriptions.TryGetValue(channel, out List<Tuple<string, AsyncMessageReceiver>>? receivers))
-        {
-            return receivers.Count;
-        }
-
-        _log.LogWarning("Unable to get info about recently subscribed {Channel}", channel);
-        return 1;
+        _subscriptions.TryGetValue(channel, out ConcurrentDictionary<string, AsyncMessageReceiver>? receivers);
+        return receivers.Count;
     }
 
     public IEnumerable<string> UnsubscribeAll(string clientId)
@@ -167,12 +166,9 @@ public class Database : IDatabaseManagement, IDatabase
             .Select(pair =>
             {
                 _log.LogInformation("Examining channel {Channel}", pair.Key);
-                if (pair.Value.RemoveAll(x => x.Item1 == clientId) > 0)
-                {
-                    _log.LogDebug("For {ClientId}: Removing subscription to {Channel}", clientId, pair.Key);
-                    return pair.Key;
-                }
-                return null;
+                pair.Value.TryRemove(clientId, out _);
+                _log.LogDebug("For {ClientId}: Removing subscription to {Channel}", clientId, pair.Key);
+                return pair.Key;
             })
             .Where(k => k != null)
             .ToList() as List<string>;
@@ -180,13 +176,13 @@ public class Database : IDatabaseManagement, IDatabase
 
     public void Unsubscribe(string clientId, string channel)
     {
-        if (!_subscriptions.TryGetValue(channel, out List<Tuple<string, AsyncMessageReceiver>>? receivers))
+        if (!_subscriptions.TryGetValue(channel, out ConcurrentDictionary<string, AsyncMessageReceiver>? receivers))
         {
             return;
         }
         lock (receivers)
         {
-            receivers.RemoveAll(x => x.Item1 == clientId);
+            receivers.Remove(clientId, out _);
         }
     }
 
