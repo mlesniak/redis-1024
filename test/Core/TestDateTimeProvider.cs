@@ -10,10 +10,20 @@ namespace Lesniak.Redis.Test.Core;
 /// </summary>
 public class TestDateTimeProvider : IDateTimeProvider
 {
+    public TestDateTimeProvider()
+    {
+        Now = DateTime.UtcNow;
+    }
+
+    public TestDateTimeProvider(string currentTime)
+    {
+        Now = DateTime.Parse(currentTime);
+    }
+
+    public DateTime Now { get; private set; }
+
     public void Add(int ms)
     {
         Now = Now.AddMilliseconds(ms);
     }
-
-    public DateTime Now { get; private set; } = DateTime.UtcNow;
 }

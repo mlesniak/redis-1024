@@ -40,6 +40,7 @@ public class Database : IDatabaseManagement, IDatabase
 
     public event DatabaseUpdated? DatabaseUpdates;
 
+    // TODO(mlesniak) Expiratoin should be a TimeSpan
     public void Set(string key, byte[] value, long? expiration = null)
     {
         _writeLock.EnterReadLock();

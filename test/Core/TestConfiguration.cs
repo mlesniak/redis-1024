@@ -2,7 +2,7 @@ namespace Lesniak.Redis.Test.Core;
 
 public class TestConfiguration : IConfiguration
 {
-    public string DatabaseName { get; } = "database.json";
+    public string DatabaseName { get; set; } = "database.json";
     public int MaxReadBuffer { get; } = 1_024;
     public int Port { get; } = 6379;
     public string? Password { get; set; }
