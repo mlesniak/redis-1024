@@ -77,4 +77,28 @@ public class DatabaseInternalsTest
             1
         }, result);
     }
+
+    [Fact]
+    public void WriteLock_Unlocks_WhenExceptionIsThrown()
+    {
+        // Perform some failing long-running operation which
+        // wants to prevent write operations to the database.
+        _sut.WriteLock(() => throw new InvalidOperationException());
+
+        // Writing values is not blocked.
+        Task.Run(() => _sut.Set("key", new byte[]
+        {
+            1,
+            2,
+            3
+        }));
+
+        // Since we were blocked, value has not been written before the timeout.
+        Equal(new byte[]
+        {
+            1,
+            2,
+            3
+        }, _sut.Get("key"));
+    }
 }
