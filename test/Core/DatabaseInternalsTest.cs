@@ -81,7 +81,6 @@ public class DatabaseInternalsTest
     [Fact]
     public void WriteLock_Unlocks_WhenExceptionIsThrown()
     {
-        // TODO(mlesniak) fix this
         // Perform some failing long-running operation which
         // wants to prevent write operations to the database.
         Throws<InvalidOperationException>(() =>
@@ -89,13 +88,14 @@ public class DatabaseInternalsTest
             _sut.WriteLock(() => throw new InvalidOperationException());
         });
 
-        // Writing values is not blocked.
-        Task.Run(() => _sut.Set("key", new byte[]
+        // Writing values is not blocked and
+        // we also do not have a deadlock.
+        _sut.Set("key", new byte[]
         {
             1,
             2,
             3
-        }));
+        });
 
         Equal(new byte[]
         {
