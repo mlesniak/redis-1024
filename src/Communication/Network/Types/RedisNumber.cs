@@ -16,11 +16,9 @@ public class RedisNumber : RedisValue
     public static (RedisValue, int) Deserialize(byte[] data, int offset)
     {
         int lengthEnd = Array.IndexOf(data, (byte)'\r', offset);
-        int length = Int32.Parse(Encoding.ASCII.GetString(data, offset + 1, lengthEnd - offset - 1));
-        int stringStart = lengthEnd + 2;
-        int value = Int32.Parse(Encoding.ASCII.GetString(data, stringStart, length));
+        long value = Int32.Parse(Encoding.ASCII.GetString(data, offset + 1, lengthEnd - offset - 1));
         RedisNumber result = new(value);
-        return (result, stringStart + length + 2);
+        return (result, lengthEnd + 2);
     }
 
     public override byte[] Serialize()

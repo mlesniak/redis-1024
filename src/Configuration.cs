@@ -16,7 +16,7 @@ public class Configuration : IConfiguration
         configurationBuilder.AddInMemoryCollection(new Dictionary<string, string>
         {
             { "Logging:LogLevel:Lesniak.Redis", "Debug" }
-        });
+        }!);
         Logging = configurationBuilder.Build();
 
         IConfigurationBuilder builder = new ConfigurationBuilder()
