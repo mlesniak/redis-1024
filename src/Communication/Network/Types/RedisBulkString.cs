@@ -13,6 +13,11 @@ public class RedisBulkString : RedisValue
 
     public byte[]? Value { get; }
 
+    public string AsciiValue
+    {
+        get => Encoding.ASCII.GetString(Value!);
+    }
+
     public static (RedisValue, int) Deserialize(byte[] data, int offset)
     {
         int lengthEnd = Array.IndexOf(data, (byte)'\r', offset);
@@ -41,11 +46,6 @@ public class RedisBulkString : RedisValue
     public static RedisBulkString From(string? s)
     {
         return new RedisBulkString(Encoding.ASCII.GetBytes(s));
-    }
-
-    public string ToAsciiString()
-    {
-        return Encoding.ASCII.GetString(Value!);
     }
 
     public static RedisBulkString From(byte[] bs)
