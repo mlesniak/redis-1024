@@ -71,7 +71,7 @@ public class JsonPersistenceTest : IDisposable
         // We expect nothing to happen. The temporary files
         // does not exist anyway.
         _sut.Load();
-    } 
+    }
 
     public void Dispose()
     {

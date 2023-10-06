@@ -33,7 +33,7 @@ public class Configuration : IConfiguration
     public IConfiguration.JobConfiguration PersistenceJob { get; init; } = new();
     public IConfiguration.JobConfiguration CleanupJob { get; init; } = new();
 
-    public Microsoft.Extensions.Configuration.IConfiguration Logging { get; private set; } 
+    public Microsoft.Extensions.Configuration.IConfiguration Logging { get; private set; }
 
     public override string ToString()
     {

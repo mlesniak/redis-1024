@@ -13,8 +13,8 @@ public class CleanupJob : IJob
 
     public CleanupJob(
         ILogger<CleanupJob> log,
-        IConfiguration configuration, 
-        IClock clock, 
+        IConfiguration configuration,
+        IClock clock,
         IDatabaseManagement database)
     {
         _log = log;

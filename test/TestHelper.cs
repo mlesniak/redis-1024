@@ -10,5 +10,4 @@ public static class TestHelper
     {
         return Encoding.ASCII.GetString(value.Serialize());
     }
-
 }

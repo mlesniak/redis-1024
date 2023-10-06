@@ -13,5 +13,4 @@ public interface IConfiguration
     {
         public TimeSpan Interval { get; init; } = TimeSpan.FromMinutes(1);
     }
-
 }

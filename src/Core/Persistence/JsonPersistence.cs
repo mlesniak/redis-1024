@@ -18,8 +18,8 @@ public class JsonPersistence : IPersistenceProvider
     private readonly IClock _clock;
 
     public JsonPersistence(
-        ILogger<JsonPersistence> log, 
-        IConfiguration configuration, 
+        ILogger<JsonPersistence> log,
+        IConfiguration configuration,
         IClock clock,
         IDatabaseManagement database)
     {

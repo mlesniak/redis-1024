@@ -13,8 +13,8 @@ public class PersistenceJob : IJob
     private bool _dirty;
 
     public PersistenceJob(
-        ILogger<PersistenceJob> log, 
-        IConfiguration configuration, 
+        ILogger<PersistenceJob> log,
+        IConfiguration configuration,
         IDatabaseManagement database,
         IPersistenceProvider persistenceProvider)
     {

@@ -9,7 +9,7 @@ Trace.Listeners.Add(new TextWriterTraceListener(traceWriter));
 
 try
 {
-    ConfigurationOptions options = new() { EndPoints = { "localhost" }, SyncTimeout = 5000, Password = "foo"};
+    ConfigurationOptions options = new() { EndPoints = { "localhost" }, SyncTimeout = 5000, Password = "foo" };
     ConnectionMultiplexer redis = ConnectionMultiplexer.Connect(options, traceWriter);
 
     // Store and retrieve a key.
