@@ -31,4 +31,12 @@ public class RedisBulkStringTest
         var value = RedisBulkString.Nil();
         Equal("$-1\r\n", value.ToAsciiString());
     }
+
+    [Fact]
+    public void Convert_BytesTo_BulkString()
+    {
+        var bytes = "hello"u8.ToArray();
+        var value = RedisBulkString.From(bytes);
+        Equal("hello", value.AsciiValue);
+    }
 }
