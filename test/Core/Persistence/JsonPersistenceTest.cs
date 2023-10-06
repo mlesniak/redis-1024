@@ -10,14 +10,14 @@ public class JsonPersistenceTest : IDisposable
     readonly JsonPersistence _sut;
     readonly string _databaseName = Path.GetRandomFileName();
     private Database _database;
-    private TestDateTimeProvider _dateTimeProvider;
+    private TestClock _clock;
 
     public JsonPersistenceTest()
     {
         TestConfiguration configuration = new() { DatabaseName = _databaseName };
-        _dateTimeProvider = new("2023-10-01 12:34:56");
-        _database = new(TestLogger<Database>.Get(), configuration, _dateTimeProvider);
-        _sut = new JsonPersistence(TestLogger<JsonPersistence>.Get(), configuration, _dateTimeProvider, _database);
+        _clock = new("2023-10-01 12:34:56");
+        _database = new(TestLogger<Database>.Get(), configuration, _clock);
+        _sut = new JsonPersistence(TestLogger<JsonPersistence>.Get(), configuration, _clock, _database);
     }
 
     [Fact]
@@ -56,7 +56,7 @@ public class JsonPersistenceTest : IDisposable
         // Let 1000ms pass to make key2 disappear,
         // thus checking that we correctly loaded
         // expiration date as well.
-        _dateTimeProvider.Add(1000);
+        _clock.Add(1000);
 
         Equal(new byte[]
         {

@@ -6,19 +6,29 @@ using static Xunit.Assert;
 
 namespace Lesniak.Redis.Test.Communication.Network.Types;
 
+// TODO(mlesniak) tests for parsing errors
 public class RedisBulkStringTest
 {
     [Fact]
     public void Serializing_BulkString_works()
     {
         var value = RedisBulkString.From("test");
-        Equal("$4\r\ntest\r\n", TestHelper.ToAsciiString(value));
+        Equal("$4\r\ntest\r\n", value.ToAsciiString());
     }
 
-    // TODO(mlesniak) deserialize
     [Fact]
     public void Deserializing_BulkString_works()
     {
-        
+        var bytes = "$5\r\nHello"u8.ToArray();
+        var (value, next) = RedisValue.Deserialize<RedisBulkString>(bytes, 0);
+        Equal("Hello", value.AsciiValue);
+        Equal(11, next);
+    }
+
+    [Fact]
+    public void Serialize_Null_String()
+    {
+        var value = RedisBulkString.Nil();
+        Equal("$-1\r\n", value.ToAsciiString());
     }
 }

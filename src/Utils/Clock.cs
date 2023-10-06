@@ -1,6 +1,6 @@
 namespace Lesniak.Redis.Utils;
 
-public class DefaultDateTimeProvider : IDateTimeProvider
+public class Clock : IClock
 {
     public DateTime Now => DateTime.UtcNow;
 }

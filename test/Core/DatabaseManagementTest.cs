@@ -11,8 +11,8 @@ public class DatabaseManagementTest
     public DatabaseManagementTest()
     {
         TestConfiguration configuration = new();
-        TestDateTimeProvider dateTimeProvider = new();
-        _sut = new Database(TestLogger<Database>.Get(), configuration, dateTimeProvider);
+        TestClock clock = new();
+        _sut = new Database(TestLogger<Database>.Get(), configuration, clock);
     }
 
     [Fact]

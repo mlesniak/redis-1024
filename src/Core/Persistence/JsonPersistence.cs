@@ -15,16 +15,16 @@ public class JsonPersistence : IPersistenceProvider
     private readonly ILogger<JsonPersistence> _log;
     private readonly IDatabaseManagement _database;
     private readonly string _databaseName;
-    private readonly IDateTimeProvider _dateTimeProvider;
+    private readonly IClock _clock;
 
     public JsonPersistence(
         ILogger<JsonPersistence> log, 
         IConfiguration configuration, 
-        IDateTimeProvider dateTimeProvider,
+        IClock clock,
         IDatabaseManagement database)
     {
         _log = log;
-        _dateTimeProvider = dateTimeProvider;
+        _clock = clock;
         _database = database;
         _databaseName = configuration.DatabaseName;
     }
@@ -71,7 +71,7 @@ public class JsonPersistence : IPersistenceProvider
             int? expiration = null;
             if (dbValue.ExpirationDate != null)
             {
-                TimeSpan? x = _dateTimeProvider.Now - dbValue.ExpirationDate!;
+                TimeSpan? x = _clock.Now - dbValue.ExpirationDate!;
                 expiration = x.Value.Milliseconds;
             }
 

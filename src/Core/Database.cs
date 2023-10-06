@@ -15,7 +15,7 @@ public class Database : IDatabaseManagement, IDatabase
     public delegate void AsyncMessageReceiver(string channel, byte[] message);
 
     private readonly ILogger<Database> _log;
-    private readonly IDateTimeProvider _dateTimeProvider;
+    private readonly IClock _clock;
     private readonly ConcurrentDictionary<string, DatabaseValue> _storage = new();
 
     // Structure from channel -> (clientId -> receiver function).
@@ -31,10 +31,10 @@ public class Database : IDatabaseManagement, IDatabase
     private readonly ReaderWriterLockSlim _writeLock = new();
     private string? _password;
 
-    public Database(ILogger<Database> log, IConfiguration configuration, IDateTimeProvider dateTimeProvider)
+    public Database(ILogger<Database> log, IConfiguration configuration, IClock clock)
     {
         _log = log;
-        _dateTimeProvider = dateTimeProvider;
+        _clock = clock;
         _password = configuration.Password;
     }
 
@@ -50,7 +50,7 @@ public class Database : IDatabaseManagement, IDatabase
             DateTime? expirationDate = null;
             if (expiration.HasValue)
             {
-                expirationDate = _dateTimeProvider.Now.AddMilliseconds((double)expiration);
+                expirationDate = _clock.Now.AddMilliseconds((double)expiration);
             }
             DatabaseValue dbValue = new(value, expirationDate);
             _storage[key] = dbValue;
@@ -66,7 +66,7 @@ public class Database : IDatabaseManagement, IDatabase
     {
         _log.LogDebug("Retrieving {Key}", key);
         _storage.TryGetValue(key, out DatabaseValue? dbValue);
-        if (dbValue == null || dbValue.ExpirationDate <= _dateTimeProvider.Now)
+        if (dbValue == null || dbValue.ExpirationDate <= _clock.Now)
         {
             return null;
         }

@@ -1,6 +1,6 @@
 namespace Lesniak.Redis.Utils;
 
-public interface IDateTimeProvider
+public interface IClock
 {
     DateTime Now { get; }
 }

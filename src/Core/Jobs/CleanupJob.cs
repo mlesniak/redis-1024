@@ -9,17 +9,17 @@ public class CleanupJob : IJob
     private readonly ILogger<CleanupJob> _log;
     private readonly IConfiguration.JobConfiguration _configurationCleanupJob;
     private readonly IDatabaseManagement _database;
-    private readonly IDateTimeProvider _dateTimeProvider;
+    private readonly IClock _clock;
 
     public CleanupJob(
         ILogger<CleanupJob> log,
         IConfiguration configuration, 
-        IDateTimeProvider dateTimeProvider, 
+        IClock clock, 
         IDatabaseManagement database)
     {
         _log = log;
         _configurationCleanupJob = configuration.CleanupJob;
-        _dateTimeProvider = dateTimeProvider;
+        _clock = clock;
         _database = database;
     }
 
@@ -43,7 +43,7 @@ public class CleanupJob : IJob
         foreach (KeyValuePair<string, Database.DatabaseValue> kv in _database)
         {
             DateTime? expirationDate = kv.Value.ExpirationDate;
-            if (expirationDate == null || expirationDate > _dateTimeProvider.Now)
+            if (expirationDate == null || expirationDate > _clock.Now)
             {
                 continue;
             }

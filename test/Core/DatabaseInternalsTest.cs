@@ -24,13 +24,13 @@ class TimeoutWrapper
 public class DatabaseInternalsTest
 {
     private readonly IConfiguration _configuration = new TestConfiguration();
-    private readonly TestDateTimeProvider _dateTimeProvider;
+    private readonly TestClock _clock;
     private readonly IDatabaseManagement _sut;
 
     public DatabaseInternalsTest()
     {
-        _dateTimeProvider = new TestDateTimeProvider();
-        _sut = new Database(TestLogger<Database>.Get(), _configuration, _dateTimeProvider);
+        _clock = new TestClock();
+        _sut = new Database(TestLogger<Database>.Get(), _configuration, _clock);
     }
 
     [Fact]

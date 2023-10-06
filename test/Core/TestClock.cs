@@ -8,14 +8,14 @@ namespace Lesniak.Redis.Test.Core;
 /// time, we do not provide a mechanism to set the start date
 /// itself.
 /// </summary>
-public class TestDateTimeProvider : IDateTimeProvider
+public class TestClock : IClock
 {
-    public TestDateTimeProvider()
+    public TestClock()
     {
         Now = DateTime.UtcNow;
     }
 
-    public TestDateTimeProvider(string currentTime)
+    public TestClock(string currentTime)
     {
         Now = DateTime.Parse(currentTime);
     }

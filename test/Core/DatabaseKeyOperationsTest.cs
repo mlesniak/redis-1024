@@ -7,13 +7,13 @@ namespace Lesniak.Redis.Test.Core;
 public class DatabaseKeyOperationsTest
 {
     private readonly IConfiguration _configuration = new TestConfiguration();
-    private readonly TestDateTimeProvider _dateTimeProvider;
+    private readonly TestClock _clock;
     private readonly IDatabase _sut;
 
     public DatabaseKeyOperationsTest()
     {
-        _dateTimeProvider = new TestDateTimeProvider();
-        _sut = new Database(TestLogger<Database>.Get(), _configuration, _dateTimeProvider);
+        _clock = new TestClock();
+        _sut = new Database(TestLogger<Database>.Get(), _configuration, _clock);
     }
 
     [Fact]
@@ -29,7 +29,7 @@ public class DatabaseKeyOperationsTest
     {
         _sut.Set("key", new byte[]{1, 2, 3}, 1000);
         // Less than 1000ms have passed, key is available.
-        _dateTimeProvider.Add(999);
+        _clock.Add(999);
         Equal(new byte[] {1, 2, 3}, _sut.Get("key"));
     }
     
@@ -38,7 +38,7 @@ public class DatabaseKeyOperationsTest
     {
         _sut.Set("key", new byte[]{1, 2, 3}, 1000);
         // 1000ms have passed, key is not available any more.
-        _dateTimeProvider.Add(1_000);
+        _clock.Add(1_000);
         Null(_sut.Get("key"));
     }
 

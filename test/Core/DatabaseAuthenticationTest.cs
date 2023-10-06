@@ -7,13 +7,13 @@ namespace Lesniak.Redis.Test.Core;
 public class DatabaseAuthenticationTest
 {
     private readonly TestConfiguration _configuration = new();
-    private readonly TestDateTimeProvider _dateTimeProvider;
+    private readonly TestClock _clock;
     private IDatabase _sut;
 
     public DatabaseAuthenticationTest()
     {
-        _dateTimeProvider = new TestDateTimeProvider();
-        _sut = new Database(TestLogger<Database>.Get(), _configuration, _dateTimeProvider);
+        _clock = new TestClock();
+        _sut = new Database(TestLogger<Database>.Get(), _configuration, _clock);
     }
 
     [Fact]
@@ -30,7 +30,7 @@ public class DatabaseAuthenticationTest
         // file anyway). Therefore we need to manually create
         // new _sut instances outside the constructor.
         _configuration.Password = "foo";
-        _sut = new Database(TestLogger<Database>.Get(), _configuration, _dateTimeProvider);
+        _sut = new Database(TestLogger<Database>.Get(), _configuration, _clock);
         True(_sut.AuthenticationRequired);
     }
 
@@ -38,7 +38,7 @@ public class DatabaseAuthenticationTest
     public void If_PasswordSet_ErrorOnWrongPassword()
     {
         _configuration.Password = "foo";
-        _sut = new Database(TestLogger<Database>.Get(), _configuration, _dateTimeProvider);
+        _sut = new Database(TestLogger<Database>.Get(), _configuration, _clock);
 
         False(_sut.VerifyPassword("wrong-password"));
     }
@@ -47,7 +47,7 @@ public class DatabaseAuthenticationTest
     public void If_PasswordSet_VerifyCorrectPassword()
     {
         _configuration.Password = "foo";
-        _sut = new Database(TestLogger<Database>.Get(), _configuration, _dateTimeProvider);
+        _sut = new Database(TestLogger<Database>.Get(), _configuration, _clock);
 
         True(_sut.VerifyPassword("foo"));
     }

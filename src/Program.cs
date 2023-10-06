@@ -30,7 +30,7 @@ internal class Program
                 });
             })
             .AddSingleton<IConfiguration, Configuration>()
-            .AddSingleton<IDateTimeProvider>(new DefaultDateTimeProvider())
+            .AddSingleton<IClock>(new Clock())
             .AddSingleton<IDatabase, Database>()
             .AddSingleton<IDatabaseManagement>(sp => (IDatabaseManagement)sp.GetRequiredService<IDatabase>())
             .AddSingleton<IJob, CleanupJob>()
