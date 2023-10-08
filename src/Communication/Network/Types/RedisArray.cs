@@ -60,4 +60,25 @@ public class RedisArray : RedisValue, IEnumerable<RedisValue>
     {
         return new RedisArray(elements);
     }
+
+    protected bool Equals(RedisArray other) => Values.Equals(other.Values);
+
+    public override bool Equals(object? obj)
+    {
+        if (ReferenceEquals(null, obj))
+        {
+            return false;
+        }
+        if (ReferenceEquals(this, obj))
+        {
+            return true;
+        }
+        if (obj.GetType() != this.GetType())
+        {
+            return false;
+        }
+        return Equals((RedisArray)obj);
+    }
+
+    public override int GetHashCode() => Values.GetHashCode();
 }

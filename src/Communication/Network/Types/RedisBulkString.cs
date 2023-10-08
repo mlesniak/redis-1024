@@ -1,4 +1,5 @@
 using System.Text;
+using System.Linq;
 
 namespace Lesniak.Redis.Communication.Network.Types;
 
@@ -57,4 +58,26 @@ public class RedisBulkString : RedisValue
     {
         return new RedisBulkString(null);
     }
+
+    public override bool Equals(object? obj)
+    {
+        if (ReferenceEquals(null, obj))
+        {
+            return false;
+        }
+        if (ReferenceEquals(this, obj))
+        {
+            return true;
+        }
+        if (obj.GetType() != this.GetType())
+        {
+            return false;
+        }
+        return Value.SequenceEqual(((RedisBulkString)obj).Value);
+    }
+
+    public override int GetHashCode() =>
+        (Value != null
+            ? Value.GetHashCode()
+            : 0);
 }

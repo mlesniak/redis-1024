@@ -12,34 +12,58 @@ namespace Lesniak.Redis.Test.Communication.Network.Types;
 // TODO(mlesniak) introduce assertion library / .net talk
 public class RedisArrayTest
 {
-    // [Fact]
-    // public void Serializing_BulkString_works()
-    // {
-    //     var value = RedisBulkString.From("test");
-    //     Equal("$4\r\ntest\r\n", value.ToAsciiString());
-    // }
-    //
-    // [Fact]
-    // public void Deserializing_BulkString_works()
-    // {
-    //     var bytes = "$5\r\nHello"u8.ToArray();
-    //     var (value, next) = RedisValue.Deserialize<RedisBulkString>(bytes, 0);
-    //     Equal("Hello", value.AsciiValue);
-    //     Equal(11, next);
-    // }
-    //
-    // [Fact]
-    // public void Serialize_Null_String()
-    // {
-    //     var value = RedisBulkString.Nil();
-    //     Equal("$-1\r\n", value.ToAsciiString());
-    // }
-    //
-    // [Fact]
-    // public void Convert_BytesTo_BulkString()
-    // {
-    //     var bytes = "hello"u8.ToArray();
-    //     var value = RedisBulkString.From(bytes);
-    //     Equal("hello", value.AsciiValue);
-    // }
+    [Fact]
+    public void Serializing_Basic_Arrays()
+    {
+        var value = RedisArray.From(
+            RedisBulkString.From("Hello"),
+            RedisNumber.From(1));
+        Equal("*2\r\n$5\r\nHello\r\n:1\r\n", value.ToAsciiString());
+    }
+
+    [Fact]
+    public void Serialize_Nested_Array()
+    {
+        var value = RedisArray.From(
+            RedisBulkString.From("Hello"),
+            RedisArray.From(
+                RedisArray.From(
+                    RedisBulkString.From("World"),
+                    RedisNumber.From(1)
+                ),
+                RedisBulkString.From("Michael")));
+        Equal(
+            "*2\r\n$5\r\nHello\r\n*2\r\n*2\r\n$5\r\nWorld\r\n:1\r\n$7\r\nMichael\r\n",
+            value.ToAsciiString());
+    }
+
+    [Fact]
+    public void Deserialize_Basic_Array()
+    {
+        var (array, next) = RedisValue.Deserialize<RedisArray>(
+            "*2\r\n$5\r\nHello\r\n:1\r\n"u8.ToArray(), 0);
+        var expectedParsedValues = RedisArray.From(
+            RedisBulkString.From("Hello"),
+            RedisNumber.From(1));
+        Equal(expectedParsedValues, array.Values);
+        Equal(19, next);
+    }
+
+
+    [Fact]
+    public void Deserialize_Nested_Array()
+    {
+        var (array, next) = RedisValue.Deserialize<RedisArray>(
+            "*2\r\n$5\r\nHello\r\n*2\r\n*2\r\n$5\r\nWorld\r\n:1\r\n$7\r\nMichael\r\n"u8.ToArray(), 0);
+        var expectedParsedValues = RedisArray.From(
+            RedisBulkString.From("Hello"),
+            RedisArray.From(
+                RedisArray.From(
+                    RedisBulkString.From("World"),
+                    RedisNumber.From(1)
+                ),
+                RedisBulkString.From("Michael")));
+        Equal(expectedParsedValues, array.Values);
+        Equal(51, next);
+    }
 }

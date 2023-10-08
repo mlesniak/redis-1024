@@ -22,4 +22,25 @@ public class RedisErrorString : RedisValue
     {
         return new RedisErrorString(s);
     }
+
+    protected bool Equals(RedisErrorString other) => _value == other._value;
+
+    public override bool Equals(object? obj)
+    {
+        if (ReferenceEquals(null, obj))
+        {
+            return false;
+        }
+        if (ReferenceEquals(this, obj))
+        {
+            return true;
+        }
+        if (obj.GetType() != this.GetType())
+        {
+            return false;
+        }
+        return Equals((RedisErrorString)obj);
+    }
+
+    public override int GetHashCode() => _value.GetHashCode();
 }
