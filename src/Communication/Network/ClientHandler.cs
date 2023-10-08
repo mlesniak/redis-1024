@@ -190,21 +190,22 @@ public class ClientHandler
         string setKey = ((RedisBulkString)arguments[0]).AsciiValue;
         byte[] value = ((RedisBulkString)arguments[1]).Value!;
 
-        int? expirationInMs = null;
+        TimeSpan? expiration = null;
         if (arguments.Count > 2)
         {
             string type = ((RedisBulkString)arguments[2]).AsciiValue;
             int num = Int32.Parse(((RedisBulkString)arguments[3]).AsciiValue);
 
-            expirationInMs = type.ToLower() switch
+            int expirationInMs = type.ToLower() switch
             {
                 "ex" => num * 1_000,
                 "px" => num,
                 _ => throw new ArgumentOutOfRangeException()
             };
+            expiration = TimeSpan.FromMilliseconds(expirationInMs);
         }
 
-        _database.Set(setKey, value, expirationInMs);
+        _database.Set(setKey, value, expiration);
         return RedisSimpleString.From("OK");
     }
 

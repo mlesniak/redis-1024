@@ -33,7 +33,7 @@ public class RedisBulkStringTest
     }
 
     [Fact]
-    public void Convert_BytesTo_BulkString()
+    public void Convert_Bytes_To_BulkString()
     {
         var bytes = "hello"u8.ToArray();
         var value = RedisBulkString.From(bytes);

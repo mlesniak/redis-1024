@@ -40,8 +40,7 @@ public class Database : IDatabaseManagement, IDatabase
 
     public event DatabaseUpdated? DatabaseUpdates;
 
-    // TODO(mlesniak) Expiratoin should be a TimeSpan
-    public void Set(string key, byte[] value, long? expiration = null)
+    public void Set(string key, byte[] value, TimeSpan? expiration = null)
     {
         _writeLock.EnterReadLock();
         try
@@ -50,7 +49,7 @@ public class Database : IDatabaseManagement, IDatabase
             DateTime? expirationDate = null;
             if (expiration.HasValue)
             {
-                expirationDate = _clock.Now.AddMilliseconds((double)expiration);
+                expirationDate = _clock.Now.Add(expiration.Value);
             }
             DatabaseValue dbValue = new(value, expirationDate);
             _storage[key] = dbValue;

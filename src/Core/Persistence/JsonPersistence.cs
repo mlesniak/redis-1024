@@ -68,11 +68,10 @@ public class JsonPersistence : IPersistenceProvider
         foreach (KeyValuePair<string, DatabaseValue> kv in dict)
         {
             DatabaseValue dbValue = kv.Value;
-            int? expiration = null;
+            TimeSpan? expiration = null;
             if (dbValue.ExpirationDate != null)
             {
-                TimeSpan? x = _clock.Now - dbValue.ExpirationDate!;
-                expiration = x.Value.Milliseconds;
+                expiration = (_clock.Now - dbValue.ExpirationDate!);
             }
 
             _database.Set(kv.Key, dbValue.Value!, expiration);

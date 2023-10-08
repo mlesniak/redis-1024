@@ -9,6 +9,9 @@ using Microsoft.Extensions.Logging;
 
 namespace Lesniak.Redis;
 
+// TODO(mlesniak) Rename all test methods: given_when_then_every_underscroe
+// TODO(mlesniak) tests for parsing errors
+// TODO(mlesniak) expected vs actual
 // TODO(mlesniak) Proper client-based testing
 // TODO(mlesniak) Proper integration tests? Use NSubstitute.
 // TODO(mlesniak) Proper testsuite

@@ -30,7 +30,7 @@ public class JsonPersistenceTest : IDisposable
         _database.Set("key2", new byte[]
         {
             2
-        }, 1_000);
+        }, TimeSpan.FromMilliseconds(1_000));
 
         _sut.Save();
 

@@ -23,9 +23,6 @@ public class RedisSimpleString : RedisValue
         return new RedisSimpleString(s);
     }
 
-    // TODO(mlesniak) Could we create a record instead?
-    protected bool Equals(RedisSimpleString other) => _value == other._value;
-
     public override bool Equals(object? obj)
     {
         if (ReferenceEquals(null, obj))
@@ -40,7 +37,8 @@ public class RedisSimpleString : RedisValue
         {
             return false;
         }
-        return Equals((RedisSimpleString)obj);
+        RedisSimpleString other = (RedisSimpleString)obj;
+        return _value == other._value;
     }
 
     public override int GetHashCode() => _value.GetHashCode();

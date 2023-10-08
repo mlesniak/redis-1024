@@ -6,25 +6,21 @@ using static Xunit.Assert;
 
 namespace Lesniak.Redis.Test.Communication.Network.Types;
 
-// TODO(mlesniak) tests for parsing errors
-// TODO(mlesniak) Rename all test methods: given_when_then_every_underscroe
-// TODO(mlesniak) expected vs actual
-// TODO(mlesniak) introduce assertion library / .net talk
 public class RedisArrayTest
 {
     [Fact]
     public void Serializing_Basic_Arrays()
     {
-        var value = RedisArray.From(
+        var actual = RedisArray.From(
             RedisBulkString.From("Hello"),
             RedisNumber.From(1));
-        Equal("*2\r\n$5\r\nHello\r\n:1\r\n", value.ToAsciiString());
+        Equal("*2\r\n$5\r\nHello\r\n:1\r\n", actual.ToAsciiString());
     }
 
     [Fact]
     public void Serialize_Nested_Array()
     {
-        var value = RedisArray.From(
+        var actual = RedisArray.From(
             RedisBulkString.From("Hello"),
             RedisArray.From(
                 RedisArray.From(
@@ -34,7 +30,7 @@ public class RedisArrayTest
                 RedisBulkString.From("Michael")));
         Equal(
             "*2\r\n$5\r\nHello\r\n*2\r\n*2\r\n$5\r\nWorld\r\n:1\r\n$7\r\nMichael\r\n",
-            value.ToAsciiString());
+            actual.ToAsciiString());
     }
 
     [Fact]

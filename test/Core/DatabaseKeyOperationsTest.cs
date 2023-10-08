@@ -42,7 +42,7 @@ public class DatabaseKeyOperationsTest
             1,
             2,
             3
-        }, 1000);
+        }, TimeSpan.FromMilliseconds(1_000));
         // Less than 1000ms have passed, key is available.
         _clock.Add(999);
         Equal(new byte[]
@@ -61,7 +61,7 @@ public class DatabaseKeyOperationsTest
             1,
             2,
             3
-        }, 1000);
+        }, TimeSpan.FromMilliseconds(1_000));
         // 1000ms have passed, key is not available any more.
         _clock.Add(1_000);
         Null(_sut.Get("key"));
