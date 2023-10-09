@@ -17,13 +17,13 @@ public class DatabaseAuthenticationTest
     }
 
     [Fact]
-    public void ByDefault_NoPassword_Required()
+    public void By_Default_No_Password_Required()
     {
         False(_sut.AuthenticationRequired);
     }
 
     [Fact]
-    public void If_PasswordSet_AuthenticationRequired()
+    public void If_Password_Set_Authentication_Required()
     {
         // The password can only  be set when we initialize a
         // new database (since it's read from a configuration
@@ -35,7 +35,7 @@ public class DatabaseAuthenticationTest
     }
 
     [Fact]
-    public void If_PasswordSet_ErrorOnWrongPassword()
+    public void If_Password_Set_Error_On_Wrong_Password()
     {
         _configuration.Password = "foo";
         _sut = new Database(TestLogger<Database>.Get(), _configuration, _clock);
@@ -44,7 +44,7 @@ public class DatabaseAuthenticationTest
     }
 
     [Fact]
-    public void If_PasswordSet_VerifyCorrectPassword()
+    public void If_Password_Set_Verify_Correct_Password()
     {
         _configuration.Password = "foo";
         _sut = new Database(TestLogger<Database>.Get(), _configuration, _clock);
@@ -53,7 +53,7 @@ public class DatabaseAuthenticationTest
     }
 
     [Fact]
-    public void If_PasswordNotSet_VerifyIsAlwaysTrue()
+    public void If_Password_Not_Set_Verify_Is_Always_True()
     {
         True(_sut.VerifyPassword("anything-goes"));
     }

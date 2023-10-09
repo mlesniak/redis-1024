@@ -19,14 +19,14 @@ public class DatabaseChannelTest
     }
 
     [Fact]
-    public void Subscribe_ReturnsNoPreviousSubscribes_OnNewChannel()
+    public void Subscribe_Returns_No_Previous_Subscribes_On_New_Channel()
     {
         int subscribers = _sut.Subscribe("client-1", "channel", _ignoringReceiver);
         Equal(1, subscribers);
     }
 
     [Fact]
-    public void Subscribe_ReturnsCorrectNumberOfSubscribers_OnExistingChannel()
+    public void Subscribe_Returns_Correct_Number_Of_Subscribers_On_Existing_Channel()
     {
         _sut.Subscribe("client-1", "channel", _ignoringReceiver);
         int s2 = _sut.Subscribe("client-2", "channel", _ignoringReceiver);
@@ -34,7 +34,7 @@ public class DatabaseChannelTest
     }
 
     [Fact]
-    public void Subscribe_Twice_ReturnsOnlyOneSubscription()
+    public void Subscribe_Twice_Returns_Only_One_Subscription()
     {
         _sut.Subscribe("client-1", "channel", _ignoringReceiver);
         int subscribers = _sut.Subscribe("client-1", "channel", _ignoringReceiver);
@@ -42,13 +42,13 @@ public class DatabaseChannelTest
     }
 
     [Fact]
-    public void Unsubscribe_ForNonExistingChannel_Succeeds()
+    public void Unsubscribe_For_Non_Existing_Channel_Succeeds()
     {
         _sut.Unsubscribe("client-1", "does-not-exit");
     }
 
     [Fact]
-    public void Unsubscribe_For_ExistingSubscription_Succeeds()
+    public void Unsubscribe_For_Existing_Subscription_Succeeds()
     {
         _sut.Subscribe("client-1", "channel", _ignoringReceiver);
         _sut.Unsubscribe("client-1", "channel");
@@ -58,7 +58,7 @@ public class DatabaseChannelTest
     }
 
     [Fact]
-    public void Unsubscribe_ForAllSubscriptions_Succeeds()
+    public void Unsubscribe_For_All_Subscriptions_Succeeds()
     {
         _sut.Subscribe("client-1", "channel-1", _ignoringReceiver);
         _sut.Subscribe("client-1", "channel-2", _ignoringReceiver);
@@ -81,7 +81,7 @@ public class DatabaseChannelTest
     }
 
     [Fact]
-    public void Publish_TriggersDelegate()
+    public void Publish_Triggers_Delegate()
     {
         List<byte[]> messages = new();
         _sut.Subscribe("client-1", "channel", (channel, message) =>
@@ -107,7 +107,7 @@ public class DatabaseChannelTest
     }
 
     [Fact]
-    public void Publish_ToAnotherChannel_DoesNotTriggersDelegate()
+    public void Publish_To_Another_Channel_Does_Not_Trigger_Delegate()
     {
         List<byte[]> messages = new();
         _sut.Subscribe("client-1", "channel", (channel, message) =>
@@ -127,7 +127,7 @@ public class DatabaseChannelTest
     }
 
     [Fact]
-    public void Publish_RemovesClient_IfDelegateThrowsException()
+    public void Publish_Removes_Client_If_Delegate_Throws_Exception()
     {
         List<byte[]> messages = new();
         _sut.Subscribe("client-1", "channel", (channel, message) =>

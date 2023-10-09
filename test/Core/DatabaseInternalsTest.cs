@@ -34,7 +34,7 @@ public class DatabaseInternalsTest
     }
 
     [Fact]
-    public void WriteLock_LocksMultipleWrites_WhileAllowingReads()
+    public void WriteLock_Locks_Multiple_Writes_While_Allowing_Reads()
     {
         _sut.Set("key", new byte[]
         {
@@ -79,7 +79,7 @@ public class DatabaseInternalsTest
     }
 
     [Fact]
-    public void WriteLock_Unlocks_WhenExceptionIsThrown()
+    public void WriteLock_Unlocks_When_Exception_Is_Thrown()
     {
         // Perform some failing long-running operation which
         // wants to prevent write operations to the database.

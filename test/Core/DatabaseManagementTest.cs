@@ -16,7 +16,7 @@ public class DatabaseManagementTest
     }
 
     [Fact]
-    public void Clear_RemovesAllEntries()
+    public void Clear_Removes_All_Entries()
     {
         _sut.Set("demo-1", new byte[]
         {

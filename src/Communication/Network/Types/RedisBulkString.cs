@@ -25,6 +25,12 @@ public class RedisBulkString : RedisValue
         int length = Int32.Parse(Encoding.ASCII.GetString(data, offset + 1, lengthEnd - offset - 1));
         int stringStart = lengthEnd + 2;
         RedisBulkString result = new(data.AsSpan(stringStart, length).ToArray());
+
+        // For a syntactically correct Redis message, the string should be followed by a CRLF.
+        if (data[stringStart + length] != '\r')
+        {
+            throw new ArgumentException("Unexpected character at end of bulk string, expected \\r");
+        }
         return (result, stringStart + length + 2);
     }
 

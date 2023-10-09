@@ -21,7 +21,7 @@ public class JsonPersistenceTest : IDisposable
     }
 
     [Fact]
-    public void Storing_Keys_CreatesCorrectFile()
+    public void Storing_Keys_Creates_Correct_File()
     {
         _database.Set("key1", new byte[]
         {
@@ -45,7 +45,7 @@ public class JsonPersistenceTest : IDisposable
     }
 
     [Fact]
-    public void Loading_Keys_CreateCorrectDatabaseEntries()
+    public void Loading_Keys_Create_Correct_Database_Entries()
     {
         var json =
             """{"key1":{"Value":"AQ==","ExpirationDate":null},"key2":{"Value":"Ag==","ExpirationDate":"2023-10-01T12:34:57"}}""";
@@ -66,7 +66,7 @@ public class JsonPersistenceTest : IDisposable
     }
 
     [Fact]
-    public void Loading_NotExistingFile_ThrowsNoError()
+    public void Loading_Not_Existing_File_Throws_No_Error()
     {
         // We expect nothing to happen. The temporary files
         // does not exist anyway.

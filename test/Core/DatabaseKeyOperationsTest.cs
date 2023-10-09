@@ -35,7 +35,7 @@ public class DatabaseKeyOperationsTest
     }
 
     [Fact]
-    public void Set_ForExpirationDateInFarFuture_ReturnsKey()
+    public void Set_For_Expiration_Date_In_Far_Future_Returns_Key()
     {
         _sut.Set("key", new byte[]
         {
@@ -54,7 +54,7 @@ public class DatabaseKeyOperationsTest
     }
 
     [Fact]
-    public void Set_ForExpirationDatePassed_ReturnsNull()
+    public void Set_For_Expiration_Date_Passed_Returns_Null()
     {
         _sut.Set("key", new byte[]
         {
@@ -68,19 +68,19 @@ public class DatabaseKeyOperationsTest
     }
 
     [Fact]
-    public void Get_ReturnsNull_OnUndefinedKey()
+    public void Get_Returns_Null_On_Undefined_Key()
     {
         Null(_sut.Get("key"));
     }
 
     [Fact]
-    public void Remove_DoesNothing_ForNonExistingKey()
+    public void Remove_Does_Nothing_For_Non_Existing_Key()
     {
         _sut.Remove("not-existing");
     }
 
     [Fact]
-    public void Remove_Removes_ExistingKey()
+    public void Remove_Removes_Existing_Key()
     {
         _sut.Set("key", new byte[]
         {

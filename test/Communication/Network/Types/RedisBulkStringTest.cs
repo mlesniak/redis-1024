@@ -39,4 +39,12 @@ public class RedisBulkStringTest
         var value = RedisBulkString.From(bytes);
         Equal("hello", value.AsciiValue);
     }
+
+    [Fact]
+    public void Parsing_Error_Throws_Correct_Exception()
+    {
+         
+        var bytes = "$3\r\nHello"u8.ToArray();
+        var (value, next) = RedisValue.Deserialize<RedisBulkString>(bytes, 0);
+    }
 }
