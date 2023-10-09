@@ -9,7 +9,6 @@ using Microsoft.Extensions.Logging;
 
 namespace Lesniak.Redis;
 
-// TODO(mlesniak) Use records instead of classes?
 // TODO(mlesniak) Use proper background jobs.
 // TODO(mlesniak) tests for parsing errors
 // TODO(mlesniak) Proper client-based testing
