@@ -2,16 +2,9 @@ using System.Text;
 
 namespace Lesniak.Redis.Communication.Network.Types;
 
-public class RedisNumber : RedisValue
+public record RedisNumber(long Value) : RedisValue
 {
     public const char Identifier = ':';
-
-    private RedisNumber(long value)
-    {
-        Value = value;
-    }
-
-    public long Value { get; }
 
     public static (RedisValue, int) Deserialize(byte[] data, int offset)
     {
@@ -34,24 +27,5 @@ public class RedisNumber : RedisValue
         return new RedisNumber(l);
     }
 
-    protected bool Equals(RedisNumber other) => Value == other.Value;
-
-    public override bool Equals(object? obj)
-    {
-        if (ReferenceEquals(null, obj))
-        {
-            return false;
-        }
-        if (ReferenceEquals(this, obj))
-        {
-            return true;
-        }
-        if (obj.GetType() != this.GetType())
-        {
-            return false;
-        }
-        return Equals((RedisNumber)obj);
-    }
-
-    public override int GetHashCode() => Value.GetHashCode();
+    public override string ToString() => $"{Value}";
 }

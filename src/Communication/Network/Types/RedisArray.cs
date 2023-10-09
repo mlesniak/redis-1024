@@ -3,22 +3,15 @@ using System.Text;
 
 namespace Lesniak.Redis.Communication.Network.Types;
 
-public class RedisArray : RedisValue, IEnumerable<RedisValue>
+public record RedisArray(RedisValue[] Values) : RedisValue, IEnumerable<RedisValue>
 {
     public const char Identifier = '*';
-
-    private RedisArray(params RedisValue[] elements)
-    {
-        Values = elements.ToList();
-    }
-
-    public IList<RedisValue> Values { get; }
 
     public RedisValue this[int index] => Values[index];
 
     public IEnumerator<RedisValue> GetEnumerator()
     {
-        return Values.GetEnumerator();
+        return Values.ToList().GetEnumerator();
     }
 
     IEnumerator IEnumerable.GetEnumerator()
@@ -28,7 +21,7 @@ public class RedisArray : RedisValue, IEnumerable<RedisValue>
 
     public static (RedisValue, int) Deserialize(byte[] data, int offset)
     {
-        RedisArray result = new();
+        List<RedisValue> result = new();
         int numElementsIndexEnd = Array.IndexOf(data, (byte)'\r', offset);
         int numElements =
             Int32.Parse(Encoding.ASCII.GetString(data, offset + 1, numElementsIndexEnd - offset - 1));
@@ -36,17 +29,18 @@ public class RedisArray : RedisValue, IEnumerable<RedisValue>
         for (int i = 0; i < numElements; i++)
         {
             (RedisValue elem, int nextArrayOffset) = Deserialize<RedisValue>(data, offset);
-            result.Values.Add(elem);
+            result.Add(elem);
             offset = nextArrayOffset;
         }
 
-        return (result, offset);
+        var array = new RedisArray(result.ToArray());
+        return (array, offset);
     }
 
     public override byte[] Serialize()
     {
         StringBuilder sb = new StringBuilder();
-        sb.Append($"*{Values!.Count}");
+        sb.Append($"*{Values.Length}");
         sb.Append("\r\n");
         foreach (RedisValue value in Values)
         {
@@ -61,23 +55,10 @@ public class RedisArray : RedisValue, IEnumerable<RedisValue>
         return new RedisArray(elements);
     }
 
-    protected bool Equals(RedisArray other) => Values.Equals(other.Values);
 
-    public override bool Equals(object? obj)
+    public virtual bool Equals(RedisArray? other)
     {
-        if (ReferenceEquals(null, obj))
-        {
-            return false;
-        }
-        if (ReferenceEquals(this, obj))
-        {
-            return true;
-        }
-        if (obj.GetType() != this.GetType())
-        {
-            return false;
-        }
-        return Equals((RedisArray)obj);
+        return Values.SequenceEqual(other.Values);
     }
 
     public override int GetHashCode() => Values.GetHashCode();

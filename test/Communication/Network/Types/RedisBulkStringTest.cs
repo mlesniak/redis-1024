@@ -19,7 +19,7 @@ public class RedisBulkStringTest
     [Fact]
     public void Deserializing_BulkString_works()
     {
-        var bytes = "$5\r\nHello"u8.ToArray();
+        var bytes = "$5\r\nHello\r\n"u8.ToArray();
         var (value, next) = RedisValue.Deserialize<RedisBulkString>(bytes, 0);
         Equal("Hello", value.AsciiValue);
         Equal(11, next);
@@ -43,8 +43,10 @@ public class RedisBulkStringTest
     [Fact]
     public void Parsing_Error_Throws_Correct_Exception()
     {
-         
         var bytes = "$3\r\nHello"u8.ToArray();
-        var (value, next) = RedisValue.Deserialize<RedisBulkString>(bytes, 0);
+        Throws<ArgumentException>(() =>
+        {
+            RedisValue.Deserialize<RedisBulkString>(bytes, 0);
+        });
     }
 }

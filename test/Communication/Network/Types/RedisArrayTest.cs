@@ -41,7 +41,7 @@ public class RedisArrayTest
         var expectedParsedValues = RedisArray.From(
             RedisBulkString.From("Hello"),
             RedisNumber.From(1));
-        Equal(expectedParsedValues, array.Values);
+        Equal(expectedParsedValues, array);
         Equal(19, next);
     }
 

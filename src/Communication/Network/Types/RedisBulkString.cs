@@ -3,16 +3,9 @@ using System.Linq;
 
 namespace Lesniak.Redis.Communication.Network.Types;
 
-public class RedisBulkString : RedisValue
+public record RedisBulkString(byte[]? Value) : RedisValue
 {
     public const char Identifier = '$';
-
-    private RedisBulkString(byte[]? value)
-    {
-        Value = value;
-    }
-
-    public byte[]? Value { get; }
 
     public string AsciiValue
     {
@@ -27,7 +20,7 @@ public class RedisBulkString : RedisValue
         RedisBulkString result = new(data.AsSpan(stringStart, length).ToArray());
 
         // For a syntactically correct Redis message, the string should be followed by a CRLF.
-        if (data[stringStart + length] != '\r')
+        if (stringStart + length >= data.Length || data[stringStart + length] != '\r')
         {
             throw new ArgumentException("Unexpected character at end of bulk string, expected \\r");
         }
@@ -62,28 +55,22 @@ public class RedisBulkString : RedisValue
 
     public static RedisBulkString Nil()
     {
-        return new RedisBulkString(null);
+        return new RedisBulkString((byte[]?)null);
     }
 
-    public override bool Equals(object? obj)
+    public virtual bool Equals(RedisBulkString? other)
     {
-        if (ReferenceEquals(null, obj))
-        {
-            return false;
-        }
-        if (ReferenceEquals(this, obj))
-        {
-            return true;
-        }
-        if (obj.GetType() != this.GetType())
-        {
-            return false;
-        }
-        return Value.SequenceEqual(((RedisBulkString)obj).Value);
+        return Value.SequenceEqual(other!.Value);
     }
 
     public override int GetHashCode() =>
         (Value != null
             ? Value.GetHashCode()
             : 0);
+
+    public override string ToString()
+    {
+        var value = Value == null ? "null" : Encoding.ASCII.GetString(Value);
+        return $"{Value.Length}({value})";
+    }
 }
