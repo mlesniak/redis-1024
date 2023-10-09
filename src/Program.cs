@@ -9,6 +9,8 @@ using Microsoft.Extensions.Logging;
 
 namespace Lesniak.Redis;
 
+// TODO(mlesniak) Use records instead of classes?
+// TODO(mlesniak) Use proper background jobs.
 // TODO(mlesniak) tests for parsing errors
 // TODO(mlesniak) Proper client-based testing
 // TODO(mlesniak) Proper integration tests? Use NSubstitute.
@@ -25,8 +27,6 @@ internal class Program
             {
                 builder.AddSimpleConsole(options =>
                 {
-                    options.IncludeScopes = true;
-                    options.SingleLine = true;
                     options.TimestampFormat = "HH:mm:ss ";
                 });
             })
