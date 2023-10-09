@@ -16,7 +16,7 @@ namespace Lesniak.Redis;
 // TODO(mlesniak) Proper integration tests? Use NSubstitute.
 // TODO(mlesniak) Proper testsuite
 // TODO(mlesniak) Documentation
-internal class Program
+class Program
 {
     private ServiceProvider _serviceProvider;
 
