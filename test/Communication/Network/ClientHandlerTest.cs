@@ -22,7 +22,7 @@ public class ClientHandlerTest
         _ctx = new ClientContext();
         _sut = new ClientHandler(TestLogger<ClientHandler>.Get(), database);
     }
-    
+
     private byte[] CreateCommand(string command)
     {
         RedisValue[] elements = command
@@ -39,13 +39,52 @@ public class ClientHandlerTest
         Equal("$5\r\nHello\r\n"u8.ToArray(), response);
     }
 
-
     [Fact]
     public void Echo_without_arguments_returns_error()
     {
         // Assumption: superfluous spaces are trimmed by the client
         // and is nothing we have to handle.
-        var response = _sut.Handle(_ctx, CreateCommand("ECHO")); 
+        var response = _sut.Handle(_ctx, CreateCommand("ECHO"));
         Equal("-Not enough arguments\r\n"u8.ToArray(), response);
+    }
+
+    [Fact]
+    public void Set_is_parsed_correctly()
+    {
+        var response = _sut.Handle(_ctx, CreateCommand("set foo bar"));
+        Equal("+OK\r\n"u8.ToArray(), response);
+    }
+
+    [Fact]
+    public void Set_with_expiration_in_seconds_is_parsed_correctly()
+    {
+        var response = _sut.Handle(_ctx, CreateCommand("set foo bar ex 1000"));
+        Equal("+OK\r\n"u8.ToArray(), response);
+    }
+
+    [Fact]
+    public void Set_with_expiration_in_milliseconds_is_parsed_correctly()
+    {
+        var response = _sut.Handle(_ctx, CreateCommand("set foo bar px 1000"));
+        Equal("+OK\r\n"u8.ToArray(), response);
+    }
+
+
+    [Fact]
+    public void Set_without_enough_arguments_returns_error()
+    {
+        // Assumption: superfluous spaces are trimmed by the client
+        // and is nothing we have to handle.
+        var response = _sut.Handle(_ctx, CreateCommand("set foo bar ex"));
+        Equal("-Not enough arguments\r\n"u8.ToArray(), response);
+    }
+    
+    [Fact]
+    public void Set_with_invalid_timespan_argument_returns_error()
+    {
+        // Assumption: superfluous spaces are trimmed by the client
+        // and is nothing we have to handle.
+        var response = _sut.Handle(_ctx, CreateCommand("set foo bar ?? 1000"));
+        Equal("-Invalid expiration type\r\n"u8.ToArray(), response);
     }
 }

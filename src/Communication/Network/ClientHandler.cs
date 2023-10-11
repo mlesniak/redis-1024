@@ -181,8 +181,9 @@ public class ClientHandler
 
     [RequiresAuthentication]
     private RedisValue SetHandler(ClientContext ctx, IReadOnlyList<RedisValue> arguments)
+        // do do mi so fa fa re
     {
-        if (arguments.Count() < 2)
+        if (arguments.Count != 2 && arguments.Count != 4)
         {
             return RedisErrorString.From("Not enough arguments");
         }
@@ -196,12 +197,18 @@ public class ClientHandler
             string type = ((RedisBulkString)arguments[2]).AsciiValue;
             int num = Int32.Parse(((RedisBulkString)arguments[3]).AsciiValue);
 
-            int expirationInMs = type.ToLower() switch
+            int expirationInMs;
+            switch (type.ToLower())
             {
-                "ex" => num * 1_000,
-                "px" => num,
-                _ => throw new ArgumentOutOfRangeException()
-            };
+                case "ex":
+                    expirationInMs = num * 1_000;
+                    break;
+                case "px":
+                    expirationInMs = num;
+                    break;
+                default: return RedisErrorString.From("Invalid expiration type");
+            }
+            ;
             expiration = TimeSpan.FromMilliseconds(expirationInMs);
         }
 
