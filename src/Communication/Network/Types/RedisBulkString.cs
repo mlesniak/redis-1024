@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using System.Text;
 using System.Linq;
 
@@ -63,11 +64,13 @@ public record RedisBulkString(byte[]? Value) : RedisValue
         return Value.SequenceEqual(other!.Value);
     }
 
+    [ExcludeFromCodeCoverage]
     public override int GetHashCode() =>
         (Value != null
             ? Value.GetHashCode()
             : 0);
 
+    [ExcludeFromCodeCoverage]
     public override string ToString()
     {
         var value = Value == null ? "null" : Encoding.ASCII.GetString(Value);

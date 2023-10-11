@@ -62,4 +62,36 @@ public class RedisArrayTest
         Equal(expectedParsedValues, array.Values);
         Equal(51, next);
     }
+
+    [Fact]
+    public void Verify_enumeration_works()
+    {
+        var array = RedisArray.From(
+            RedisNumber.From(3),
+            RedisNumber.From(2),
+            RedisNumber.From(1));
+        var list = new List<long>();
+        
+        foreach(var redisValue in array)
+        {
+            var v = (RedisNumber)redisValue;
+            list.Add(v.Value);
+        }
+
+        Equal(new List<long> { 3, 2, 1 }, list);
+    }
+    
+    [Fact]
+    public void Verify_indexing_works()
+    {
+        var array = RedisArray.From(
+            RedisNumber.From(3),
+            RedisNumber.From(2),
+            RedisNumber.From(1));
+        var list = new List<long>();
+
+        Equal(3, ((array[0] as RedisNumber)!).Value);
+        Equal(2, ((array[1] as RedisNumber)!).Value);
+        Equal(1, ((array[2] as RedisNumber)!).Value);
+    }
 }

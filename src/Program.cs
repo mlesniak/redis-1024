@@ -9,6 +9,8 @@ using Microsoft.Extensions.Logging;
 
 namespace Lesniak.Redis;
 
+// TODO(mlesniak) increase test coverage for existing code
+// TODO(mlesniak) Implement DEL command and proper tests
 // TODO(mlesniak) Use proper background jobs.
 // TODO(mlesniak) tests for parsing errors
 // TODO(mlesniak) Proper client-based testing

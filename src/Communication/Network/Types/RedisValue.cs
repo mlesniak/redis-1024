@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using System.Text;
 
 namespace Lesniak.Redis.Communication.Network.Types;
@@ -26,7 +27,7 @@ public abstract record RedisValue
     /// <exception cref="ArgumentOutOfRangeException">
     ///     Thrown in case the identifier byte is unknown.
     /// </exception>
-    public static (T, int) Deserialize<T>(byte[] data, int offset) where T: RedisValue
+    public static (T, int) Deserialize<T>(byte[] data, int offset = 0) where T: RedisValue
     {
         byte identifier = data[offset];
         Func<byte[], int, (RedisValue, int)> method = (char)identifier switch
@@ -34,7 +35,7 @@ public abstract record RedisValue
             RedisArray.Identifier => RedisArray.Deserialize,
             RedisBulkString.Identifier => RedisBulkString.Deserialize,
             RedisNumber.Identifier => RedisNumber.Deserialize,
-            _ => throw new ArgumentOutOfRangeException(
+            _ => throw new ArgumentException(
                 nameof(identifier),
                 $"Unknown identifier byte {identifier}")
         };
@@ -42,7 +43,8 @@ public abstract record RedisValue
     }
 
     // For the time being, we use the serialized representation to present
-    // a readable form of this type.
+    // a readable form of this type. This is only used for debugging.
+    [ExcludeFromCodeCoverage]
     public override string ToString()
     {
         return Encoding.ASCII.GetString(Serialize());

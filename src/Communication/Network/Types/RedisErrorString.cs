@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using System.Text;
 
 namespace Lesniak.Redis.Communication.Network.Types;
@@ -23,5 +24,6 @@ public record RedisErrorString : RedisValue
         return new RedisErrorString(s);
     }
 
+    [ExcludeFromCodeCoverage]
     public override int GetHashCode() => _value.GetHashCode();
 }

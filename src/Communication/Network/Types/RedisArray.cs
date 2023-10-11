@@ -1,4 +1,5 @@
 using System.Collections;
+using System.Diagnostics.CodeAnalysis;
 using System.Text;
 
 namespace Lesniak.Redis.Communication.Network.Types;
@@ -61,5 +62,6 @@ public record RedisArray(RedisValue[] Values) : RedisValue, IEnumerable<RedisVal
         return Values.SequenceEqual(other.Values);
     }
 
+    [ExcludeFromCodeCoverage]
     public override int GetHashCode() => Values.GetHashCode();
 }

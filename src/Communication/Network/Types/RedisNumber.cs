@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using System.Text;
 
 namespace Lesniak.Redis.Communication.Network.Types;
@@ -27,5 +28,6 @@ public record RedisNumber(long Value) : RedisValue
         return new RedisNumber(l);
     }
 
+    [ExcludeFromCodeCoverage]
     public override string ToString() => $"{Value}";
 }
