@@ -181,7 +181,6 @@ public class ClientHandler
 
     [RequiresAuthentication]
     private RedisValue SetHandler(ClientContext ctx, IReadOnlyList<RedisValue> arguments)
-        // do do mi so fa fa re
     {
         if (arguments.Count != 2 && arguments.Count != 4)
         {
@@ -233,12 +232,6 @@ public class ClientHandler
 
     private RedisValue UnknownCommandHandler(ClientContext ctx, List<RedisValue> arguments)
     {
-        string command = "";
-        if (arguments.Count > 0)
-        {
-            command = ((RedisBulkString)arguments[0]).AsciiValue;
-        }
-
-        return RedisErrorString.From($"UNKNOWN COMMAND {command}");
+        return RedisErrorString.From($"UNKNOWN COMMAND");
     }
 }

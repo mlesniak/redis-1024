@@ -11,17 +11,18 @@ namespace Lesniak.Redis.Test.Communication.Network;
 
 public class ClientHandlerTest
 {
-    private readonly ClientHandler _sut;
     private ClientContext _ctx;
+
     private Database _database;
+
+    // Note that we are pragmatic here and override the field in case we want to
+    // define a specific test configuration. For our current uses cases, this is
+    // sufficient.
+    private ClientHandler _sut;
 
     public ClientHandlerTest()
     {
-        var configuration = new TestConfiguration();
-        var clock = new TestClock();
-        _database = new Database(TestLogger<Database>.Get(), configuration, clock);
-        _ctx = new ClientContext();
-        _sut = new ClientHandler(TestLogger<ClientHandler>.Get(), _database);
+        SetupSUT();
     }
 
     private byte[] CreateCommand(string command)
@@ -31,6 +32,15 @@ public class ClientHandlerTest
             .Select(RedisBulkString.From)
             .ToArray();
         return RedisArray.From(elements).Serialize();
+    }
+
+    private void SetupSUT(string? password = null)
+    {
+        var configuration = new TestConfiguration() { Password = password };
+        var clock = new TestClock();
+        _database = new Database(TestLogger<Database>.Get(), configuration, clock);
+        _ctx = new ClientContext();
+        _sut = new ClientHandler(TestLogger<ClientHandler>.Get(), _database);
     }
 
     [Fact]
@@ -79,7 +89,7 @@ public class ClientHandlerTest
         var response = _sut.Handle(_ctx, CreateCommand("set foo bar ex"));
         Equal("-Not enough arguments\r\n"u8.ToArray(), response);
     }
-    
+
     [Fact]
     public void Set_with_invalid_timespan_argument_returns_error()
     {
@@ -95,7 +105,7 @@ public class ClientHandlerTest
         var response = _sut.Handle(_ctx, CreateCommand("get"));
         Equal("-Not enough arguments\r\n"u8.ToArray(), response);
     }
-    
+
     [Fact]
     public void Get_returns_stored_value()
     {
@@ -103,5 +113,63 @@ public class ClientHandlerTest
 
         var response = _sut.Handle(_ctx, CreateCommand("get foo"));
         Equal("$3\r\nbar\r\n"u8.ToArray(), response);
+    }
+
+    [Fact]
+    public void Unknown_commands_returns_error()
+    {
+        var response = _sut.Handle(_ctx, CreateCommand("xyzzy"));
+        Equal("-UNKNOWN COMMAND\r\n"u8.ToArray(), response);
+    }
+
+    [Fact]
+    public void Auth_on_unset_password_succeeds()
+    {
+        var response = _sut.Handle(_ctx, CreateCommand("auth anything-goes"));
+        Equal("+OK\r\n"u8.ToArray(), response);
+    }
+
+    [Fact]
+    public void Auth_on_set_password_with_correct_password_succeeds()
+    {
+        SetupSUT("password");
+
+        var response = _sut.Handle(_ctx, CreateCommand("auth password"));
+        Equal("+OK\r\n"u8.ToArray(), response);
+    }
+
+    [Fact]
+    public void Auth_on_wrong_password_fails()
+    {
+        SetupSUT("password");
+
+        var response = _sut.Handle(_ctx, CreateCommand("auth something else"));
+        Equal("-invalid password\r\n"u8.ToArray(), response);
+    }
+
+    [Fact]
+    public void Auth_without_enough_arguments_returns_error()
+    {
+        var response = _sut.Handle(_ctx, CreateCommand("auth"));
+        Equal("-Not enough arguments\r\n"u8.ToArray(), response);
+    }
+
+    [Fact]
+    public void Set_with_enabled_password_fails_without_authentication()
+    {
+        SetupSUT("password");
+
+        var response = _sut.Handle(_ctx, CreateCommand("set key value"));
+        Equal("-Authentication needed. Use AUTH command\r\n"u8.ToArray(), response);
+    }
+    
+    [Fact]
+    public void Set_with_enabled_password_succeeds_after_authentication()
+    {
+        SetupSUT("password");
+        _sut.Handle(_ctx, CreateCommand("auth password"));
+
+        var response = _sut.Handle(_ctx, CreateCommand("set key value"));
+        Equal("+OK\r\n"u8.ToArray(), response);
     }
 }
