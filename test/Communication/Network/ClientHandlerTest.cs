@@ -13,14 +13,15 @@ public class ClientHandlerTest
 {
     private readonly ClientHandler _sut;
     private ClientContext _ctx;
+    private Database _database;
 
     public ClientHandlerTest()
     {
         var configuration = new TestConfiguration();
         var clock = new TestClock();
-        var database = new Database(TestLogger<Database>.Get(), configuration, clock);
+        _database = new Database(TestLogger<Database>.Get(), configuration, clock);
         _ctx = new ClientContext();
-        _sut = new ClientHandler(TestLogger<ClientHandler>.Get(), database);
+        _sut = new ClientHandler(TestLogger<ClientHandler>.Get(), _database);
     }
 
     private byte[] CreateCommand(string command)
@@ -86,5 +87,21 @@ public class ClientHandlerTest
         // and is nothing we have to handle.
         var response = _sut.Handle(_ctx, CreateCommand("set foo bar ?? 1000"));
         Equal("-Invalid expiration type\r\n"u8.ToArray(), response);
+    }
+
+    [Fact]
+    public void Get_without_enough_arguments_returns_error()
+    {
+        var response = _sut.Handle(_ctx, CreateCommand("get"));
+        Equal("-Not enough arguments\r\n"u8.ToArray(), response);
+    }
+    
+    [Fact]
+    public void Get_returns_stored_value()
+    {
+        _database.Set("foo", "bar"u8.ToArray());
+
+        var response = _sut.Handle(_ctx, CreateCommand("get foo"));
+        Equal("$3\r\nbar\r\n"u8.ToArray(), response);
     }
 }
