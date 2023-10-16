@@ -73,13 +73,13 @@ public class Database : IDatabaseManagement, IDatabase
         return dbValue.Value;
     }
 
-    public void Remove(string key)
+    public bool Remove(string key)
     {
         _writeLock.EnterReadLock();
         try
         {
             _log.LogDebug("Removing {Key}", key);
-            _storage.Remove(key, out DatabaseValue? _);
+            return _storage.Remove(key, out DatabaseValue? _);
         }
         finally
         {

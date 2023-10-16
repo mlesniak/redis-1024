@@ -48,10 +48,10 @@ public class ClientHandler
 
         Func<ClientContext, List<RedisValue>, RedisValue> method = command switch
         {
-            // TODO(mlesniak) add del command
             "auth" => AuthHandler,
             "set" => SetHandler,
             "get" => GetHandler,
+            "del" => DelHandler,
             "echo" => EchoHandler,
             "subscribe" => SubscribeHandler,
             "unsubscribe" => UnsubscribeHandler,
@@ -229,6 +229,31 @@ public class ClientHandler
             ? RedisBulkString.Nil()
             : RedisBulkString.From(resultBytes);
     }
+
+    // TODO(mlesniak) add tests
+    [RequiresAuthentication]
+    private RedisValue DelHandler(ClientContext ctx, List<RedisValue> arguments)
+    {
+        var removedCounter = 0; 
+        if (!arguments.Any())
+        {
+            return RedisErrorString.From("Not enough arguments");
+        }
+
+        foreach (RedisValue ch in arguments)
+        {
+            string key = ((RedisBulkString)ch).AsciiValue;
+            bool removed = _database.Remove(key);
+            if (removed)
+            {
+                removedCounter++;
+            }
+        }
+
+        return RedisNumber.From(removedCounter);
+    }
+
+
 
     private RedisValue UnknownCommandHandler(ClientContext ctx, List<RedisValue> arguments)
     {
