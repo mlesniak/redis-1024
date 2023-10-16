@@ -162,7 +162,7 @@ public class ClientHandlerTest
         var response = _sut.Handle(_ctx, CreateCommand("set key value"));
         Equal("-Authentication needed. Use AUTH command\r\n"u8.ToArray(), response);
     }
-    
+
     [Fact]
     public void Set_with_enabled_password_succeeds_after_authentication()
     {
@@ -171,5 +171,77 @@ public class ClientHandlerTest
 
         var response = _sut.Handle(_ctx, CreateCommand("set key value"));
         Equal("+OK\r\n"u8.ToArray(), response);
+    }
+
+    [Fact]
+    public void Subscribe_subscribes_to_a_channel_and_returns_number_of_subscribers()
+    {
+        var c1 = new ClientContext();
+        var c2 = new ClientContext();
+
+        var response1 = _sut.Handle(c1, CreateCommand("subscribe channel"));
+        Equal("*3\r\n$9\r\nsubscribe\r\n$7\r\nchannel\r\n:1\r\n"u8.ToArray(), response1);
+
+        var response2 = _sut.Handle(c2, CreateCommand("subscribe channel"));
+        Equal("*3\r\n$9\r\nsubscribe\r\n$7\r\nchannel\r\n:2\r\n"u8.ToArray(), response2);
+    }
+
+    [Fact]
+    public void Subscribe_without_enough_arguments_returns_error()
+    {
+        var response = _sut.Handle(_ctx, CreateCommand("subscribe"));
+        Equal("-Not enough arguments\r\n"u8.ToArray(), response);
+    }
+
+    [Fact]
+    public void Unpublish_removes_client_and_returns_channels_which_were_unsubscribed()
+    {
+        _sut.Handle(new ClientContext(), CreateCommand("subscribe channel"));
+        _sut.Handle(new ClientContext(), CreateCommand("subscribe channel"));
+
+        // We do not forbid a client from unsubscribing from a channel which
+        // it is not subscribed to. 
+        var response = _sut.Handle(_ctx, CreateCommand("unsubscribe channel"));
+        Equal("*2\r\n$11\r\nunsubscribe\r\n$7\r\nchannel\r\n"u8.ToArray(), response);
+    }
+
+    [Fact]
+    public void Unsubscribe_without_arguments_shall_unsubscribe_from_all()
+    {
+        var ctx = new ClientContext();
+        _sut.Handle(ctx, CreateCommand("subscribe channel1"));
+        _sut.Handle(ctx, CreateCommand("subscribe channel2"));
+
+        var response = _sut.Handle(_ctx, CreateCommand("unsubscribe"));
+
+        Equal("*3\r\n$11\r\nunsubscribe\r\n$8\r\nchannel1\r\n$8\r\nchannel2\r\n"u8.ToArray(), response);
+    }
+
+    [Fact]
+    public void Publish_triggers_a_response_handler()
+    {
+        var sb = new StringBuilder();
+        var ctx = new ClientContext()
+        {
+            SendToClient = (bytes) =>
+            {
+                sb.Append(Encoding.UTF8.GetString(bytes));
+            }
+        };
+        _sut.Handle(ctx, CreateCommand("subscribe channel"));
+
+        _sut.Handle(ctx, CreateCommand("publish channel 1234567890"));
+        _sut.Handle(ctx, CreateCommand("publish channel 12345"));
+
+        var result = sb.ToString();
+        Equal("*3\r\n$7\r\nmessage\r\n$7\r\nchannel\r\n$10\r\n1234567890\r\n" +
+              "*3\r\n$7\r\nmessage\r\n$7\r\nchannel\r\n$5\r\n12345\r\n", result);
+    }
+    
+    [Fact]
+    public void Publish_without_enough_arguments_returns_error()
+    {
+        var response = _sut.Handle(_ctx, CreateCommand("publish"));
+        Equal("-Not enough arguments\r\n"u8.ToArray(), response);
     }
 }

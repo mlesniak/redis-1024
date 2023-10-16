@@ -164,12 +164,13 @@ public class Database : IDatabaseManagement, IDatabase
         return _subscriptions
             .Select(pair =>
             {
-                _log.LogInformation("Examining channel {Channel}", pair.Key);
+                // Note that the order in which we handle channels
+                // for the same client is not guaranteed. 
                 pair.Value.TryRemove(clientId, out _);
-                _log.LogDebug("For {ClientId}: Removing subscription to {Channel}", clientId, pair.Key);
+                _log.LogInformation("For {ClientId}: Removing subscription to {Channel}", clientId, pair.Key);
                 return pair.Key;
             })
-            .Where(k => k != null)
+            .OrderBy(s => s)
             .ToList() as List<string>;
     }
 
