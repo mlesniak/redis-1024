@@ -244,4 +244,21 @@ public class ClientHandlerTest
         var response = _sut.Handle(_ctx, CreateCommand("publish"));
         Equal("-Not enough arguments\r\n"u8.ToArray(), response);
     }
+
+    [Fact]
+    public void Del_without_enough_arguments_returns_error()
+    {
+        var response = _sut.Handle(_ctx, CreateCommand("del"));
+        Equal("-Not enough arguments\r\n"u8.ToArray(), response);
+    }
+
+    [Fact]
+    public void Del_removes_key_and_returns_number_of_removed_keys()
+    {
+        _sut.Handle(_ctx, CreateCommand("set foo bar"));
+        _sut.Handle(_ctx, CreateCommand("set bar foo"));
+
+        var response = _sut.Handle(_ctx, CreateCommand("del foo bar"));
+        Equal(":2\r\n"u8.ToArray(), response);
+    }
 }

@@ -230,7 +230,6 @@ public class ClientHandler
             : RedisBulkString.From(resultBytes);
     }
 
-    // TODO(mlesniak) add tests
     [RequiresAuthentication]
     private RedisValue DelHandler(ClientContext ctx, List<RedisValue> arguments)
     {
