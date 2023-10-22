@@ -6,7 +6,6 @@ using static Xunit.Assert;
 
 namespace Lesniak.Redis.Test.Communication.Network.Types;
 
-// TODO(mlesniak) tests for parsing errors
 public class RedisBulkStringTest
 {
     [Fact]

@@ -9,13 +9,6 @@ using Microsoft.Extensions.Logging;
 
 namespace Lesniak.Redis;
 
-// TODO(mlesniak) increase test coverage for existing code
-// TODO(mlesniak) Implement DEL command and proper tests
-// TODO(mlesniak) Use proper background jobs.
-// TODO(mlesniak) tests for parsing errors
-// TODO(mlesniak) Proper client-based testing
-// TODO(mlesniak) Proper integration tests? Use NSubstitute.
-// TODO(mlesniak) Proper testsuite
 // TODO(mlesniak) Documentation
 class Program
 {
@@ -43,6 +36,9 @@ class Program
             .BuildServiceProvider();
     }
 
+    // I know that there are more idiomatic approaches to this, but for the time being
+    // this is good enough and I'll explore other interesting topics first. I might
+    // come back to this later, though, let's be honest, this is rather unlikely. ;-)
     private void SpawnJobs()
     {
         foreach (IJob job in _serviceProvider.GetServices<IJob>())
